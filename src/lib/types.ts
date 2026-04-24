@@ -85,4 +85,5 @@ export interface Job {
   createdAt: string;
   ghostUrl?: string;
   ghostExternal?: boolean;
+  sensoUrl?: string;
 }

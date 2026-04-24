@@ -18,5 +18,6 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     paid,
     ghostUrl: job.ghostUrl,
     ghostExternal: job.ghostExternal,
+    sensoUrl: job.sensoUrl,
   });
 }

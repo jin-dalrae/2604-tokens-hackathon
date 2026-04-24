@@ -11,6 +11,7 @@
   "dependencies": {
     "@apollo/subgraph": "^2.13.3",
     "@coinbase/cdp-sdk": "^1.48.2",
+    "@coinbase/x402": "^2.1.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.0",
     "@tryghost/admin-api": "^1.14.7",
@@ -22,6 +23,8 @@
     "react-dom": "19.2.4",
     "redis": "^5.12.1",
     "three": "^0.184.0",
+    "x402": "^1.2.0",
+    "x402-next": "^1.2.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

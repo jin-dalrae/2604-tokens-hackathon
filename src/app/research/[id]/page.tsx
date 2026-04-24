@@ -7,19 +7,33 @@ import type { AgentEvent } from "@/lib/types";
 const KIND_LABEL: Record<AgentEvent["kind"], string> = {
   queued: "queue",
   browse: "tinyfish",
-  extract: "nexla",
+  extract: "structure",
   memory: "redis",
   synthesize: "synth",
-  publish: "ghost",
+  publish: "ghost+senso",
   done: "done",
   error: "error",
 };
+
+const STAGES: { kind: AgentEvent["kind"]; label: string; sub: string }[] = [
+  { kind: "queued", label: "Queue", sub: "Agent spinning up" },
+  { kind: "browse", label: "Browse", sub: "TinyFish across open web" },
+  { kind: "extract", label: "Structure", sub: "Raw pages → typed facts" },
+  { kind: "memory", label: "Memory", sub: "Redis semantic store + contradictions" },
+  { kind: "synthesize", label: "Synthesize", sub: "Composing CompanyInsight" },
+  { kind: "publish", label: "Publish", sub: "Ghost + Senso cited.md" },
+];
 
 export default function ResearchPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const [events, setEvents] = useState<AgentEvent[]>([]);
   const [status, setStatus] = useState<"running" | "done" | "error">("running");
+  const [company, setCompany] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch(`/api/research/${id}`).then(r => r.json()).then(d => setCompany(d.company));
+  }, [id]);
 
   useEffect(() => {
     const es = new EventSource(`/api/research/${id}/stream`);
@@ -28,71 +42,114 @@ export default function ResearchPage({ params }: { params: Promise<{ id: string 
       setEvents((prev) => [...prev, e]);
       if (e.kind === "done") {
         setStatus("done");
-        setTimeout(() => router.push(`/report/${id}`), 600);
+        setTimeout(() => router.push(`/report/${id}`), 700);
         es.close();
       } else if (e.kind === "error") {
         setStatus("error");
         es.close();
       }
     };
-    es.onerror = () => {
-      es.close();
-    };
+    es.onerror = () => es.close();
     return () => es.close();
   }, [id, router]);
 
   const groups = useMemo(() => groupStages(events), [events]);
+  const activeStage = useMemo(() => currentStage(events, status), [events, status]);
 
   return (
-    <section className="flex-1 grid grid-cols-12 gap-0">
-      <aside className="col-span-4 border-r border-neutral-800 p-5 space-y-4 min-h-full">
-        <div className="space-y-1">
-          <div className="text-xs font-mono uppercase text-neutral-500">Agent status</div>
-          <div className="text-sm font-mono">
-            job <span className="text-emerald-400">{id}</span>
+    <section className="nn-grid flex-1 grid grid-cols-12 gap-6 px-6 py-6">
+      {/* Sidebar */}
+      <aside className="col-span-12 md:col-span-4 nn-card nn-card-lg p-6 flex flex-col gap-5">
+        <header className="flex items-center justify-between">
+          <div>
+            <div className="nn-label">Agent Status</div>
+            <div className="mt-1 text-lg font-semibold">{company ?? "…"}</div>
           </div>
-          <div className="text-xs font-mono text-neutral-500">
-            status: <span className={statusColor(status)}>{status}</span>
-          </div>
-        </div>
-        <ol className="space-y-3">
-          {STAGES.map((stage) => (
-            <li key={stage.kind} className="border border-neutral-800 rounded p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-mono uppercase tracking-widest">
-                  {stage.label}
-                </span>
-                <span className={`text-[10px] font-mono ${stageColor(groups[stage.kind])}`}>
-                  {stageMark(groups[stage.kind], status)}
-                </span>
-              </div>
-              <ul className="mt-2 space-y-1 text-xs text-neutral-400 font-mono">
-                {(groups[stage.kind] ?? []).map((e) => (
-                  <li key={e.id} className="truncate">
-                    → {e.label}
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ))}
+          <span className={`nn-chip ${statusChip(status)}`}>{status}</span>
+        </header>
+
+        <ol className="space-y-2.5">
+          {STAGES.map((stage) => {
+            const list = groups[stage.kind] ?? [];
+            const state = stageState(stage.kind, list, activeStage, status);
+            return (
+              <li
+                key={stage.kind}
+                className={`relative rounded-xl border p-3 transition-colors ${
+                  state === "active"
+                    ? "border-[var(--primary)] bg-[rgba(0,240,255,0.06)] nn-glow-primary"
+                    : state === "done"
+                    ? "border-[var(--secondary)]/40 bg-[rgba(182,0,248,0.04)]"
+                    : "border-white/5 bg-white/[0.02]"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-col">
+                    <span className="nn-label text-[10px]">{stage.label}</span>
+                    <span className="text-[11px] text-[var(--on-surface-variant)] mt-0.5">
+                      {stage.sub}
+                    </span>
+                  </div>
+                  <span
+                    className={`font-mono text-[10px] tracking-[0.18em] uppercase ${
+                      state === "active"
+                        ? "text-[var(--primary)]"
+                        : state === "done"
+                        ? "text-[var(--secondary-soft)]"
+                        : "text-[var(--on-surface-variant)]/40"
+                    }`}
+                  >
+                    {state === "active" ? "• live" : state === "done" ? "ok" : "—"}
+                  </span>
+                </div>
+                {list.length > 0 && (
+                  <ul className="mt-2 space-y-0.5 pl-1">
+                    {list.slice(-3).map((e) => (
+                      <li
+                        key={e.id}
+                        className="font-mono text-[10px] tracking-[0.04em] text-[var(--on-surface-variant)] truncate"
+                      >
+                        → {e.label}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
         </ol>
       </aside>
-      <div className="col-span-8 p-5">
-        <div className="text-xs font-mono uppercase text-neutral-500 mb-3">Event log</div>
-        <div className="border border-neutral-800 rounded h-[70vh] overflow-auto font-mono text-xs">
+
+      {/* Event log */}
+      <div className="col-span-12 md:col-span-8 nn-card nn-card-lg p-6 flex flex-col gap-4 min-h-[70vh]">
+        <div className="flex items-center justify-between">
+          <div className="nn-label">Live Event Stream</div>
+          <span className="font-mono text-[10px] text-[var(--on-surface-variant)]">
+            job {id} · {events.length} events
+          </span>
+        </div>
+        <div className="flex-1 overflow-auto font-mono text-[12px] rounded-lg bg-black/40 border border-white/5 divide-y divide-white/5">
           {events.length === 0 && (
-            <div className="p-4 text-neutral-500">Waiting for agent events…</div>
+            <div className="p-5 text-[var(--on-surface-variant)]">Waiting for the agent to report in…</div>
           )}
           {events.map((e) => (
             <div
               key={e.id}
-              className="px-4 py-1.5 border-b border-neutral-900 flex gap-3 hover:bg-neutral-900/40"
+              className="px-4 py-2.5 flex gap-4 hover:bg-white/[0.03] transition-colors"
             >
-              <span className="text-neutral-600">{e.at.split("T")[1]?.split(".")[0]}</span>
-              <span className="text-emerald-400 w-20 shrink-0">[{KIND_LABEL[e.kind]}]</span>
-              <span className="text-neutral-200 flex-1">{e.label}</span>
+              <span className="text-[var(--outline)] w-20 shrink-0">
+                {e.at.split("T")[1]?.split(".")[0]}
+              </span>
+              <span
+                className={`w-24 shrink-0 ${kindColor(e.kind)}`}
+              >
+                [{KIND_LABEL[e.kind]}]
+              </span>
+              <span className="flex-1 text-[var(--on-surface)]">{e.label}</span>
               {e.sourceUrl && (
-                <span className="text-neutral-500 truncate max-w-[40%]">{e.sourceUrl}</span>
+                <span className="text-[var(--on-surface-variant)] truncate max-w-[35%] text-right">
+                  {e.sourceUrl}
+                </span>
               )}
             </div>
           ))}
@@ -102,34 +159,52 @@ export default function ResearchPage({ params }: { params: Promise<{ id: string 
   );
 }
 
-const STAGES: { kind: AgentEvent["kind"]; label: string }[] = [
-  { kind: "queued", label: "01 · queue" },
-  { kind: "browse", label: "02 · tinyfish browse" },
-  { kind: "extract", label: "03 · nexla extract" },
-  { kind: "memory", label: "04 · redis memory" },
-  { kind: "synthesize", label: "05 · synthesize" },
-  { kind: "publish", label: "06 · ghost publish" },
-];
-
 function groupStages(events: AgentEvent[]): Record<string, AgentEvent[]> {
   const out: Record<string, AgentEvent[]> = {};
-  for (const e of events) {
-    (out[e.kind] ??= []).push(e);
-  }
+  for (const e of events) (out[e.kind] ??= []).push(e);
   return out;
 }
 
-function stageMark(list: AgentEvent[] | undefined, status: string): string {
-  if (!list || list.length === 0) return status === "running" ? "…" : "—";
-  return "ok";
+function currentStage(events: AgentEvent[], status: string): AgentEvent["kind"] | null {
+  if (status === "done") return null;
+  for (let i = events.length - 1; i >= 0; i--) {
+    const k = events[i].kind;
+    if (k !== "done" && k !== "error") return k;
+  }
+  return null;
 }
 
-function stageColor(list: AgentEvent[] | undefined): string {
-  return list && list.length > 0 ? "text-emerald-400" : "text-neutral-600";
+function stageState(
+  kind: AgentEvent["kind"],
+  list: AgentEvent[],
+  active: AgentEvent["kind"] | null,
+  status: string,
+): "pending" | "active" | "done" {
+  if (list.length === 0) return "pending";
+  if (kind === active && status === "running") return "active";
+  return "done";
 }
 
-function statusColor(s: string): string {
-  if (s === "done") return "text-emerald-400";
-  if (s === "error") return "text-red-400";
-  return "text-amber-300";
+function statusChip(s: string): string {
+  if (s === "done") return "!text-[var(--primary)] !border-[var(--primary)]/40 !bg-[var(--primary)]/10";
+  if (s === "error") return "!text-red-300 !border-red-400/40 !bg-red-500/10";
+  return "";
+}
+
+function kindColor(k: AgentEvent["kind"]): string {
+  switch (k) {
+    case "browse":
+    case "extract":
+    case "memory":
+      return "text-[var(--primary)]";
+    case "synthesize":
+      return "text-[var(--secondary-soft)]";
+    case "publish":
+    case "done":
+      return "text-[var(--primary-soft)]";
+    case "error":
+      return "text-red-300";
+    default:
+      return "text-[var(--on-surface-variant)]";
+  }
 }

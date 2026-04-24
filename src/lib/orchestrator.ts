@@ -4,6 +4,7 @@ import { browse, targetsFor, type BrowseResult } from "./adapters/tinyfish";
 import { structure, type StructuredPage } from "./adapters/nexla";
 import { remember, findContradictions } from "./adapters/redis";
 import { publish } from "./adapters/ghost";
+import { publishToSenso } from "./adapters/senso";
 import { emit, getJob, updateJob } from "./jobs";
 import type { CompanyInsight, Source } from "./types";
 
@@ -14,16 +15,20 @@ export async function runAgent(jobId: string, origin: string): Promise<void> {
   emit(jobId, { kind: "queued", label: "Agent spinning up" });
 
   try {
-    // 1. Browse — TinyFish drives headless sessions across targets.
+    // 1. Browse — TinyFish drives headless sessions across targets, in parallel.
     const targets = targetsFor(job.company);
-    const pages: BrowseResult[] = [];
     for (const t of targets) {
       emit(jobId, { kind: "browse", label: `Navigating ${t.label}`, sourceUrl: t.url });
-      pages.push(await browse(t));
     }
+    const pages: BrowseResult[] = await Promise.all(targets.map((t) => browse(t)));
+    const realCount = pages.filter((p) => p.realCall).length;
+    emit(jobId, {
+      kind: "browse",
+      label: `${pages.length} pages fetched${realCount ? ` (${realCount} live via TinyFish)` : ""}`,
+    });
 
-    // 2. Extract — Nexla turns HTML + feeds into structured data.
-    emit(jobId, { kind: "extract", label: "Structuring pages via Nexla" });
+    // 2. Extract — structure raw HTML into typed CompanyInsight facts.
+    emit(jobId, { kind: "extract", label: "Structuring pages" });
     const structured: StructuredPage[] = await structure(pages, job.company);
 
     // 3. Memory — Redis stores facts + flags contradictions.
@@ -44,7 +49,7 @@ export async function runAgent(jobId: string, origin: string): Promise<void> {
     emit(jobId, { kind: "synthesize", label: "Composing Company Insight" });
     const insight = synthesize(jobId, job.company, structured, contradictions);
 
-    // 5. Publish — Ghost report + cited.md.
+    // 5a. Publish — Ghost report + local cited.md mirror.
     emit(jobId, { kind: "publish", label: "Publishing report" });
     const pub = await publish(insight, origin);
     await writeCitedMd(insight);
@@ -54,11 +59,22 @@ export async function runAgent(jobId: string, origin: string): Promise<void> {
       sourceUrl: pub.url,
     });
 
+    // 5b. Senso — push cited.md entry for the agent economy.
+    const senso = await publishToSenso(insight);
+    if (senso.ok) {
+      emit(jobId, {
+        kind: "publish",
+        label: "Cited on cited.md (Senso)",
+        sourceUrl: senso.citedUrl,
+      });
+    }
+
     updateJob(jobId, {
       insight,
       status: "done",
       ghostUrl: pub.url,
       ghostExternal: pub.external,
+      sensoUrl: senso.citedUrl,
     });
     emit(jobId, { kind: "done", label: "Report ready", sourceUrl: pub.url });
   } catch (err) {

@@ -14,6 +14,7 @@ interface ReportState {
   paid: boolean;
   ghostUrl?: string;
   ghostExternal?: boolean;
+  sensoUrl?: string;
 }
 
 export default function ReportPage({ params }: { params: Promise<{ id: string }> }) {
@@ -24,16 +25,11 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/research/${id}`, { cache: "no-store" });
-    if (!res.ok) {
-      setError("Report not found");
-      return;
-    }
+    if (!res.ok) return setError("Report not found");
     setData((await res.json()) as ReportState);
   }, [id]);
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+  useEffect(() => { void load(); }, [load]);
 
   async function unlock() {
     setPaying(true);
@@ -53,149 +49,189 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
     }
   }
 
-  if (error) return <div className="p-6 text-red-400">{error}</div>;
-  if (!data) return <div className="p-6 text-neutral-400">Loading report…</div>;
-  if (!data.insight)
+  if (error) return <div className="p-8 text-red-300">{error}</div>;
+  if (!data) return <div className="p-8 text-[var(--on-surface-variant)]">Loading report…</div>;
+  if (!data.insight) {
     return (
-      <div className="p-6 text-neutral-400">
-        Report not ready yet. <a className="underline" href={`/research/${id}`}>Back to agent</a>
+      <div className="p-8 text-[var(--on-surface-variant)]">
+        Report not ready yet. <a className="underline text-[var(--primary)]" href={`/research/${id}`}>Back to agent</a>
       </div>
     );
-
+  }
   const insight = data.insight;
 
   return (
-    <section className="max-w-6xl mx-auto w-full px-6 py-8 space-y-8">
-      <header className="space-y-2 border-b border-neutral-800 pb-5">
-        <div className="text-xs font-mono uppercase text-neutral-500">Intelligence Report</div>
-        <h1 className="text-3xl font-semibold">{insight.name}</h1>
-        <p className="text-neutral-400 text-sm max-w-2xl">{insight.summary}</p>
-        <div className="text-[10px] font-mono text-neutral-500">
+    <section className="max-w-7xl mx-auto w-full px-6 py-10 space-y-8">
+      {/* Header */}
+      <header className="nn-card nn-card-lg px-8 py-7 space-y-4">
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="nn-chip">Intelligence Report · live</span>
+          <span className="nn-chip" style={{
+            background: "rgba(0,240,255,0.10)", borderColor: "rgba(0,240,255,0.35)", color: "var(--primary-soft)"
+          }}>
+            cross-referenced
+          </span>
+          {data.ghostExternal && data.ghostUrl && (
+            <a href={data.ghostUrl} target="_blank" rel="noopener noreferrer" className="nn-chip hover:opacity-80">
+              ghost post ↗
+            </a>
+          )}
+          {data.sensoUrl && (
+            <a href={data.sensoUrl} target="_blank" rel="noopener noreferrer" className="nn-chip hover:opacity-80">
+              cited.md ↗
+            </a>
+          )}
+        </div>
+        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
+          {insight.name}
+          <span className="nn-gradient-text"> · intelligence</span>
+        </h1>
+        <p className="text-[var(--on-surface-variant)] max-w-3xl leading-relaxed">
+          {insight.summary}
+        </p>
+        <div className="font-mono text-[10px] tracking-[0.2em] text-[var(--on-surface-variant)]/70 uppercase">
           generated {insight.generatedAt} · {insight.sources.length} sources
         </div>
-        {data.ghostExternal && data.ghostUrl && (
-          <a
-            href={data.ghostUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block text-xs font-mono text-emerald-400 border border-emerald-400/40 rounded px-3 py-1.5 hover:bg-emerald-400/10"
-          >
-            view on ghost ↗ {data.ghostUrl}
-          </a>
-        )}
       </header>
 
-      <div className="grid grid-cols-3 gap-4">
-        <Stat label="Headcount" value={insight.employeeTrend.headcount.toString()} />
+      {/* Stat grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Stat label="Headcount" value={insight.employeeTrend.headcount.toString()} sub="linkedin" />
         <Stat
-          label="30d growth"
+          label="30-day Growth"
           value={`${(insight.employeeTrend.growth30d * 100).toFixed(1)}%`}
-          tone={insight.employeeTrend.signal === "hiring" ? "pos" : "neu"}
+          sub={insight.employeeTrend.signal}
+          tone={insight.employeeTrend.signal === "hiring" ? "pos" : insight.employeeTrend.signal === "layoffs" ? "neg" : "neu"}
         />
         <Stat
-          label="Sentiment"
+          label="Public Sentiment"
           value={insight.publicSentiment.score.toFixed(2)}
+          sub={insight.publicSentiment.trend}
           tone={insight.publicSentiment.trend === "up" ? "pos" : insight.publicSentiment.trend === "down" ? "neg" : "neu"}
         />
       </div>
 
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-mono uppercase tracking-widest text-neutral-400">Knowledge Map</h2>
+      {/* Knowledge map */}
+      <section className="nn-card nn-card-lg p-5 space-y-3">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="space-y-1">
+            <div className="nn-label">Knowledge Map</div>
+            <div className="text-xs text-[var(--on-surface-variant)]">Drag to rotate · scroll to zoom · embedded in every Ghost post</div>
+          </div>
           <EmbedActions id={insight.id} />
         </div>
         <KnowledgeMap insight={insight} />
       </section>
 
-      <section className="grid grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <h3 className="text-sm font-mono uppercase tracking-widest text-neutral-400">Official claims</h3>
-          <ul className="text-sm text-neutral-200 space-y-1 list-disc pl-4">
+      {/* Claims vs sentiment */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <Block title="Official Claims" tint="primary">
+          <ul className="space-y-2">
             {insight.officialClaims.map((c, i) => (
-              <li key={i}>{c}</li>
+              <li key={i} className="text-sm leading-relaxed">{c}</li>
             ))}
           </ul>
-        </div>
-        <div className="space-y-2">
-          <h3 className="text-sm font-mono uppercase tracking-widest text-neutral-400">Public sentiment</h3>
-          <ul className="text-sm text-neutral-200 space-y-1 list-disc pl-4">
+        </Block>
+        <Block title="Public Signal" tint="secondary">
+          <ul className="space-y-2">
+            {insight.publicSentiment.sampleMentions.length === 0 && (
+              <li className="text-sm text-[var(--on-surface-variant)]">No public mentions fetched this run.</li>
+            )}
             {insight.publicSentiment.sampleMentions.map((m, i) => (
-              <li key={i}>{m}</li>
+              <li key={i} className="text-sm leading-relaxed">{m}</li>
             ))}
           </ul>
-        </div>
+        </Block>
       </section>
 
-      <section className="relative">
-        <h2 className="text-sm font-mono uppercase tracking-widest text-neutral-400 mb-3">
-          Deep Research · contradictions, people, sources
-        </h2>
-        <div className={data.paid ? "" : "relative"}>
-          <div className={data.paid ? "" : "blur-sm pointer-events-none select-none"}>
-            <div className="space-y-5">
-              <Block title="Contradictions">
-                {insight.contradictions.length === 0 ? (
-                  <p className="text-sm text-neutral-400">None found.</p>
-                ) : (
-                  insight.contradictions.map((c, i) => (
-                    <div key={i} className="border border-neutral-800 rounded p-3 text-sm space-y-1">
-                      <div className="font-semibold">{c.claim}</div>
-                      <div className="text-neutral-400">{c.counterEvidence}</div>
-                      <div className="text-xs font-mono text-neutral-500">
-                        official: {c.officialSource} · counter: {c.counterSource}
-                      </div>
-                    </div>
-                  ))
-                )}
-              </Block>
-              <Block title="Key people">
-                <ul className="text-sm space-y-1">
-                  {insight.keyPeople.map((p, i) => (
-                    <li key={i} className="text-neutral-200">
-                      <span className="font-semibold">{p.name}</span>
-                      <span className="text-neutral-500"> — {p.role}</span>
-                    </li>
-                  ))}
-                </ul>
-              </Block>
-              <Block title="Competitors">
-                <ul className="text-sm space-y-1">
-                  {insight.competitors.map((c, i) => (
-                    <li key={i} className="text-neutral-200">
-                      <span className="font-semibold">{c.name}</span>
-                      <span className="text-neutral-500"> — {c.overlap} ({(c.strength * 100).toFixed(0)}%)</span>
-                    </li>
-                  ))}
-                </ul>
-              </Block>
-              <Block title="Sources">
-                <ul className="text-xs font-mono space-y-1">
-                  {insight.sources.map((s, i) => (
-                    <li key={i} className="text-neutral-400">
-                      [{s.kind}] {s.title} — {s.url}
-                    </li>
-                  ))}
-                </ul>
-              </Block>
+      {/* Deep research, paywalled */}
+      <section className="relative space-y-4">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <div className="nn-label">Deep Research</div>
+            <div className="text-xs text-[var(--on-surface-variant)] mt-1">
+              Contradictions · key people · competitors · full sources
             </div>
           </div>
+          {data.paid && <span className="nn-chip">unlocked</span>}
+        </div>
+        <div className="relative">
+          <div className={data.paid ? "space-y-5" : "space-y-5 blur-[10px] pointer-events-none select-none"}>
+            <Block title="Contradictions" tint="secondary">
+              {insight.contradictions.length === 0 ? (
+                <p className="text-sm text-[var(--on-surface-variant)]">None surfaced this run.</p>
+              ) : (
+                <ul className="space-y-3">
+                  {insight.contradictions.map((c, i) => (
+                    <li key={i} className="rounded-lg border border-white/5 bg-black/30 p-3 space-y-1">
+                      <div className="text-sm font-semibold">{c.claim}</div>
+                      <div className="text-sm text-[var(--on-surface-variant)]">{c.counterEvidence}</div>
+                      <div className="font-mono text-[10px] text-[var(--on-surface-variant)]/70 tracking-wider">
+                        official {c.officialSource} · counter {c.counterSource}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Block>
+            <Block title="Key People" tint="primary">
+              <ul className="space-y-1.5 text-sm">
+                {insight.keyPeople.map((p, i) => (
+                  <li key={i}>
+                    <span className="font-semibold">{p.name}</span>
+                    <span className="text-[var(--on-surface-variant)]"> — {p.role}</span>
+                  </li>
+                ))}
+              </ul>
+            </Block>
+            <Block title="Competitors" tint="secondary">
+              <ul className="space-y-1.5 text-sm">
+                {insight.competitors.map((c, i) => (
+                  <li key={i}>
+                    <span className="font-semibold">{c.name}</span>
+                    <span className="text-[var(--on-surface-variant)]"> — {c.overlap} · {(c.strength * 100).toFixed(0)}%</span>
+                  </li>
+                ))}
+              </ul>
+            </Block>
+            <Block title="Sources" tint="primary">
+              <ul className="font-mono text-[11px] space-y-1">
+                {insight.sources.map((s, i) => (
+                  <li key={i} className="text-[var(--on-surface-variant)]">
+                    [{s.kind}] {s.title} — <a className="underline hover:text-[var(--primary)]" href={s.url}>{s.url}</a>
+                  </li>
+                ))}
+              </ul>
+            </Block>
+          </div>
+
           {!data.paid && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="border border-emerald-400/40 bg-neutral-950/90 rounded-lg p-6 max-w-sm text-center space-y-3">
-                <div className="text-xs font-mono uppercase tracking-widest text-emerald-400">
-                  x402 · micro-payment
-                </div>
-                <div className="text-lg font-semibold">Unlock deep research</div>
-                <p className="text-xs text-neutral-400">
-                  1.00 USDC unlocks contradictions, people, competitors, and full source list.
+              <div className="nn-card nn-card-lg p-8 max-w-md text-center space-y-4 nn-glow-primary">
+                <div className="nn-label">x402 · coinbase cdp</div>
+                <div className="text-2xl font-bold">Unlock deep research</div>
+                <p className="text-sm text-[var(--on-surface-variant)]">
+                  1.00 USDC unlocks contradictions, key people, full competitor list, and the
+                  complete source bibliography. Payment settles on-chain via Coinbase Developer
+                  Platform.
                 </p>
                 <button
                   onClick={unlock}
                   disabled={paying}
-                  className="w-full border border-emerald-400 text-emerald-400 rounded px-4 py-2 text-sm font-mono uppercase tracking-wider disabled:opacity-50"
+                  className="nn-btn-primary w-full flex items-center justify-center gap-2"
                 >
-                  {paying ? "settling…" : "pay 1 USDC"}
+                  {paying ? (
+                    <>
+                      <span className="w-2 h-2 rounded-full bg-[var(--on-primary)] nn-pulse" />
+                      settling…
+                    </>
+                  ) : (
+                    <>Pay 1 USDC →</>
+                  )}
                 </button>
+                <div className="font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--on-surface-variant)]/70">
+                  agent-native · per-report · no subscription
+                </div>
               </div>
             </div>
           )}
@@ -205,12 +241,38 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
   );
 }
 
-function Stat({ label, value, tone = "neu" }: { label: string; value: string; tone?: "pos" | "neg" | "neu" }) {
-  const color = tone === "pos" ? "text-emerald-400" : tone === "neg" ? "text-red-400" : "text-neutral-100";
+function Stat({
+  label, value, sub, tone = "neu",
+}: { label: string; value: string; sub?: string; tone?: "pos" | "neg" | "neu" }) {
+  const color = tone === "pos"
+    ? "text-[var(--primary)]"
+    : tone === "neg"
+    ? "text-red-300"
+    : "text-[var(--on-surface)]";
   return (
-    <div className="border border-neutral-800 rounded p-4">
-      <div className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">{label}</div>
-      <div className={`text-2xl font-semibold ${color}`}>{value}</div>
+    <div className="nn-card nn-card-lg p-5 flex flex-col gap-1.5">
+      <span className="nn-label">{label}</span>
+      <span className={`text-3xl font-bold tracking-tight ${color}`}>{value}</span>
+      {sub && (
+        <span className="font-mono text-[10px] tracking-[0.2em] uppercase text-[var(--on-surface-variant)]/80">
+          {sub}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function Block({ title, tint = "primary", children }: {
+  title: string; tint?: "primary" | "secondary"; children: React.ReactNode;
+}) {
+  const accent = tint === "primary" ? "var(--primary)" : "var(--secondary)";
+  return (
+    <div
+      className="nn-card p-5 border-l-2"
+      style={{ borderLeftColor: accent }}
+    >
+      <div className="nn-label mb-3">{title}</div>
+      {children}
     </div>
   );
 }
@@ -232,28 +294,11 @@ function EmbedActions({ id }: { id: string }) {
     setTimeout(() => setCopied(false), 1400);
   };
   return (
-    <div className="flex gap-2 text-[10px] font-mono">
-      <button
-        onClick={openWindow}
-        className="border border-neutral-700 hover:border-emerald-400 hover:text-emerald-400 px-2 py-1 rounded uppercase tracking-widest"
-      >
-        open window ↗
-      </button>
-      <button
-        onClick={copyEmbed}
-        className="border border-neutral-700 hover:border-emerald-400 hover:text-emerald-400 px-2 py-1 rounded uppercase tracking-widest"
-      >
+    <div className="flex gap-2">
+      <button onClick={openWindow} className="nn-btn-ghost">open window ↗</button>
+      <button onClick={copyEmbed} className="nn-btn-ghost">
         {copied ? "copied ✓" : "copy iframe"}
       </button>
-    </div>
-  );
-}
-
-function Block({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="border border-neutral-800 rounded p-4 space-y-2">
-      <div className="text-[10px] font-mono uppercase tracking-widest text-neutral-500">{title}</div>
-      {children}
     </div>
   );
 }

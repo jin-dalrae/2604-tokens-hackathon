@@ -1,16 +1,16 @@
-# Sources for Vercel
+# Sources for vercel
 
-_Generated 2026-04-24T21:03:41.777Z_
+_Generated 2026-04-24T22:17:00.320Z_
 
-- [Vercel — official site](https://vercel.com) — _website_, fetched 2026-04-24T21:03:38.603Z
-  > Vercel positions itself as a leading platform with enterprise customers.
-- [Vercel — LinkedIn](https://www.linkedin.com/company/vercel) — _linkedin_, fetched 2026-04-24T21:03:39.118Z
-  > Vercel headcount grew ~4% in the last 30 days; heavy hiring in eng & sales.
-- [Vercel — X / Twitter](https://x.com/search?q=Vercel) — _x_, fetched 2026-04-24T21:03:39.869Z
-  > Mentions of Vercel trend positive, with occasional concern about pricing.
-- [Vercel — news](https://news.google.com/search?q=Vercel) — _news_, fetched 2026-04-24T21:03:40.719Z
-  > Recent coverage of Vercel focuses on product launches and funding.
+- [vercel — official site](https://vercel.com) — _website_, fetched 2026-04-24T22:16:57.567Z
+  > vercel positions itself as a leading platform with enterprise customers.
+- [vercel — LinkedIn](https://www.linkedin.com/company/vercel) — _linkedin_, fetched 2026-04-24T22:16:58.343Z
+  > vercel headcount grew ~4% in the last 30 days; heavy hiring in eng & sales.
+- [vercel — X / Twitter](https://x.com/search?q=vercel) — _x_, fetched 2026-04-24T22:16:59.055Z
+  > Mentions of vercel trend positive, with occasional concern about pricing.
+- [vercel — news](https://news.google.com/search?q=vercel) — _news_, fetched 2026-04-24T22:16:59.822Z
+  > Recent coverage of vercel focuses on product launches and funding.
 
 ## Contradictions
-- **Vercel serves Fortune 500 customers** — official: https://vercel.com; counter: https://x.com/search?q=Vercel
+- **vercel serves Fortune 500 customers** — official: https://vercel.com; counter: https://x.com/search?q=vercel
   > Public mentions highlight pricing friction and churn risk.
