@@ -18,22 +18,26 @@ export function SiteHeader() {
           super<span className="nn-gradient-text">brain</span>
         </span>
       </Link>
-      <nav className="font-mono text-[11px] tracking-[0.2em] uppercase text-[var(--on-surface-variant)] flex gap-6 items-center">
+      <nav className="font-mono text-[11px] tracking-[0.2em] uppercase text-[var(--on-surface-variant)] flex gap-5 items-center">
         <Link href="/" className="hover:text-[var(--primary)] transition-colors">launch</Link>
         <span className="opacity-30">/</span>
         <a
-          href="https://superbrain.ghost.io"
+          href="https://superbrain.ghost.io/"
           target="_blank"
           rel="noopener noreferrer"
-          className="hover:text-[var(--primary)] transition-colors"
-        >reports</a>
+          className="hover:text-[var(--primary)] transition-colors flex items-center gap-1"
+        >
+          ghost <span aria-hidden>↗</span>
+        </a>
         <span className="opacity-30">/</span>
         <a
           href="https://cited.md"
           target="_blank"
           rel="noopener noreferrer"
-          className="hover:text-[var(--primary)] transition-colors"
-        >cited.md</a>
+          className="hover:text-[var(--primary)] transition-colors flex items-center gap-1"
+        >
+          cited.md <span aria-hidden>↗</span>
+        </a>
         <span className="opacity-30">/</span>
         <a
           href="/api/graphql"
