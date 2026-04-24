@@ -8,6 +8,7 @@ export default function Home() {
     <div className="flex-1">
       <Hero />
       <HowItWorks />
+      <CitedMdSpotlight />
       <Innovation />
       <Monetization />
       <ClosingCTA />
@@ -95,6 +96,7 @@ function Hero() {
 const STEPS = [
   "Browse · TinyFish",
   "Memory · Redis",
+  "Synthesize · Gemini",
   "Publish · Ghost",
   "Cite · Senso",
   "Federate · Wundergraph",
@@ -126,6 +128,12 @@ function HowItWorks() {
               where="TinyFish cloud · /v1/automation/run"
               kind="LLM · web"
               desc="Four parallel agents open a URL, follow a prose goal, return typed data."
+            />
+            <AgentRow
+              name="Gemini synthesis"
+              where="Google Gen AI · gemini-3.1-flash-lite"
+              kind="LLM · reasoning"
+              desc="Reasons over raw pages + Senso KB context, produces the typed CompanyInsight with real people, competitors, and URL-cited contradictions."
             />
             <AgentRow
               name="Senso content engine"
@@ -175,6 +183,78 @@ function HowItWorks() {
               — 12 curated docs about SuperBrain ground every cited.md publish.
             </div>
           </Card>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ============================ CITED.MD SPOTLIGHT ============================ */
+
+function CitedMdSpotlight() {
+  return (
+    <section className="relative px-6 py-24 border-t border-white/5">
+      <div className="max-w-5xl mx-auto nn-card nn-card-lg p-10 relative overflow-hidden">
+        <div
+          aria-hidden
+          className="absolute -right-20 -top-20 w-72 h-72 rounded-full blur-3xl opacity-30"
+          style={{ background: "var(--accent-grad)" }}
+        />
+        <div className="relative grid grid-cols-1 md:grid-cols-[1fr,auto] gap-10 items-center">
+          <div className="space-y-5">
+            <span className="nn-label">Powered by cited.md</span>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight">
+              Every report lands on{" "}
+              <span className="nn-gradient-text">cited.md</span>
+              <span className="text-[var(--on-surface-variant)] text-xl ml-2">—</span>
+              <br />
+              the agent-native web.
+            </h2>
+            <p className="text-[var(--on-surface-variant)] leading-relaxed max-w-lg">
+              cited.md is where agents publish context that other agents cite. When we publish a
+              SuperBrain report to <span className="font-mono text-[var(--primary)]">cited.md/article/:id</span>,
+              it&apos;s instantly discoverable, typed, and citable. Every fetch by every downstream agent
+              triggers a metered transaction through Senso&apos;s x402 rails.
+            </p>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <span className="nn-chip">per-run publish</span>
+              <span className="nn-chip">Senso-grounded</span>
+              <span className="nn-chip">x402 metered</span>
+              <span className="nn-chip">agent discoverable</span>
+            </div>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <a
+                href="https://cited.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="nn-btn-primary"
+              >
+                Visit cited.md →
+              </a>
+              <a
+                href="https://cited.md/article/c7e8abb0-1c2e-4dc0-9ee1-4b3701e4ae45"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="nn-btn-ghost"
+              >
+                Sample live article ↗
+              </a>
+            </div>
+          </div>
+          <div className="flex flex-col gap-3 min-w-[220px]">
+            {["What is SuperBrain", "vs Perplexity", "Pricing and x402", "Linear report"].map((t, i) => (
+              <div
+                key={t}
+                className="nn-card px-4 py-3 flex items-center gap-3 border-l-2"
+                style={{ borderLeftColor: i % 2 ? "var(--secondary)" : "var(--primary)" }}
+              >
+                <span className="font-mono text-[10px] tracking-[0.18em] text-[var(--on-surface-variant)]/70">
+                  cited.md/article/
+                </span>
+                <span className="font-semibold text-sm truncate">{t}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

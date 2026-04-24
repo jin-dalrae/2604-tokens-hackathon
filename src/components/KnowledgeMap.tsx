@@ -112,23 +112,33 @@ function Edge({
   b: [number, number, number];
   strength: number;
 }) {
-  const geo = useMemo(() => {
-    const g = new THREE.BufferGeometry();
-    g.setAttribute(
-      "position",
-      new THREE.Float32BufferAttribute([...a, ...b], 3),
+  // Use a tubular geometry so the edges are always visible (SVG `<line>`
+  // collision with three.js Line is avoided) and gradient-tinted.
+  const { position, quaternion, scale } = useMemo(() => {
+    const start = new THREE.Vector3(...a);
+    const end = new THREE.Vector3(...b);
+    const mid = start.clone().add(end).multiplyScalar(0.5);
+    const dir = end.clone().sub(start);
+    const length = dir.length();
+    const q = new THREE.Quaternion().setFromUnitVectors(
+      new THREE.Vector3(0, 1, 0),
+      dir.clone().normalize(),
     );
-    return g;
+    return {
+      position: mid.toArray() as [number, number, number],
+      quaternion: [q.x, q.y, q.z, q.w] as [number, number, number, number],
+      scale: [1, length, 1] as [number, number, number],
+    };
   }, [a, b]);
+
+  const radius = 0.02 + strength * 0.03;
+  const opacity = 0.18 + strength * 0.55;
+
   return (
-    <line>
-      <primitive object={geo} attach="geometry" />
-      <lineBasicMaterial
-        color="#4ade80"
-        transparent
-        opacity={0.15 + strength * 0.45}
-      />
-    </line>
+    <mesh position={position} quaternion={quaternion} scale={scale}>
+      <cylinderGeometry args={[radius, radius, 1, 6, 1, true]} />
+      <meshBasicMaterial color="#4ade80" transparent opacity={opacity} />
+    </mesh>
   );
 }
 

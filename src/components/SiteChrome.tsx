@@ -21,6 +21,8 @@ export function SiteHeader() {
       <nav className="font-mono text-[11px] tracking-[0.2em] uppercase text-[var(--on-surface-variant)] flex gap-5 items-center">
         <Link href="/" className="hover:text-[var(--primary)] transition-colors">launch</Link>
         <span className="opacity-30">/</span>
+        <Link href="/reports" className="hover:text-[var(--primary)] transition-colors">reports</Link>
+        <span className="opacity-30">/</span>
         <a
           href="https://superbrain.ghost.io/"
           target="_blank"

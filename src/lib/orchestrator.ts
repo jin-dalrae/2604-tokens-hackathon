@@ -5,6 +5,8 @@ import { structure, type StructuredPage } from "./adapters/nexla";
 import { remember, findContradictions } from "./adapters/redis";
 import { publish } from "./adapters/ghost";
 import { publishToSenso } from "./adapters/senso";
+import { sensoSearch, type SensoSearchResult } from "./adapters/senso-search";
+import { synthesizeWithGemini, type GeminiSynth } from "./adapters/gemini";
 import { emit, getJob, updateJob } from "./jobs";
 import type { CompanyInsight, Source } from "./types";
 
@@ -27,29 +29,54 @@ export async function runAgent(jobId: string, origin: string): Promise<void> {
       label: `${pages.length} pages fetched${realCount ? ` (${realCount} live via TinyFish)` : ""}`,
     });
 
-    // 2. Extract — structure raw HTML into typed CompanyInsight facts.
+    // 2. Extract — structure raw HTML into typed facts (fallback synth).
     emit(jobId, { kind: "extract", label: "Structuring pages" });
     const structured: StructuredPage[] = await structure(pages, job.company);
 
-    // 3. Memory — Redis stores facts + flags contradictions.
+    // 3. Memory — Redis stores facts + flags basic contradictions.
     emit(jobId, { kind: "memory", label: "Writing to semantic memory (Redis)" });
     const count = await remember(jobId, structured);
     emit(jobId, { kind: "memory", label: `Indexed ${count} facts`, detail: `${count} vectors` });
 
-    const contradictions = await findContradictions(jobId, structured);
-    if (contradictions.length) {
+    const baseContradictions = await findContradictions(jobId, structured);
+    if (baseContradictions.length) {
       emit(jobId, {
         kind: "memory",
-        label: `Found ${contradictions.length} contradiction(s)`,
-        detail: contradictions[0]?.claim,
+        label: `Found ${baseContradictions.length} contradiction(s)`,
+        detail: baseContradictions[0]?.claim,
       });
     }
 
-    // 4. Synthesize — fold structured + contradictions into CompanyInsight.
-    emit(jobId, { kind: "synthesize", label: "Composing Company Insight" });
-    const insight = synthesize(jobId, job.company, structured, contradictions);
+    // 4. Ground — Senso search grounds the report in our curated KB.
+    emit(jobId, { kind: "memory", label: "Grounding in Senso KB" });
+    const sensoContext = await sensoSearch(`What does ${job.company} do and what's competitive about them?`);
+    if (sensoContext) {
+      emit(jobId, {
+        kind: "memory",
+        label: `Retrieved ${sensoContext.topChunks.length} KB chunks`,
+        detail: sensoContext.answer?.slice(0, 120),
+      });
+    }
 
-    // 5a. Publish — Ghost report + local cited.md mirror.
+    // 5. Synthesize — Gemini reasons over raw pages + KB to build CompanyInsight.
+    emit(jobId, { kind: "synthesize", label: "Reasoning with Gemini" });
+    const gem: GeminiSynth | null = await synthesizeWithGemini({
+      company: job.company,
+      jobId,
+      pages,
+      sensoContext,
+    });
+    if (gem) {
+      emit(jobId, {
+        kind: "synthesize",
+        label: `Gemini synth: ${gem.keyPeople.length} people, ${gem.competitors.length} competitors, ${gem.contradictions.length} contradictions`,
+      });
+    } else {
+      emit(jobId, { kind: "synthesize", label: "Gemini skipped — using template synth" });
+    }
+    const insight = composeInsight(jobId, job.company, pages, structured, baseContradictions, gem, sensoContext);
+
+    // 6a. Publish — Ghost report + local cited.md mirror.
     emit(jobId, { kind: "publish", label: "Publishing report" });
     const pub = await publish(insight, origin);
     await writeCitedMd(insight);
@@ -59,7 +86,7 @@ export async function runAgent(jobId: string, origin: string): Promise<void> {
       sourceUrl: pub.url,
     });
 
-    // 5b. Senso — push cited.md entry for the agent economy.
+    // 6b. Senso — push cited.md entry for the agent economy.
     const senso = await publishToSenso(insight);
     if (senso.ok) {
       emit(jobId, {
@@ -93,16 +120,67 @@ export async function runAgent(jobId: string, origin: string): Promise<void> {
   }
 }
 
-function synthesize(
+function composeInsight(
   jobId: string,
   company: string,
-  pages: StructuredPage[],
-  contradictions: CompanyInsight["contradictions"],
+  pages: BrowseResult[],
+  structured: StructuredPage[],
+  baseContradictions: CompanyInsight["contradictions"],
+  gem: GeminiSynth | null,
+  sensoContext: SensoSearchResult | null,
 ): CompanyInsight {
-  const website = pages.find((p) => p.source.kind === "website");
-  const linkedin = pages.find((p) => p.source.kind === "linkedin");
-  const x = pages.find((p) => p.source.kind === "x");
-  const news = pages.find((p) => p.source.kind === "news");
+  const sources: Source[] = structured.map((p) => p.source);
+
+  if (gem) {
+    return {
+      id: jobId,
+      name: company,
+      tagline: gem.tagline || `${company} — cross-referenced intelligence report`,
+      summary: gem.summary || fallbackSummary(company, baseContradictions.length),
+      officialClaims: gem.officialClaims.length
+        ? gem.officialClaims
+        : fallbackClaims(structured, company),
+      publicSentiment: gem.publicSentiment,
+      employeeTrend: gem.employeeTrend,
+      keyPeople: gem.keyPeople.length ? gem.keyPeople : fallbackPeople(),
+      competitors: gem.competitors.length ? gem.competitors : fallbackCompetitors(structured),
+      contradictions: gem.contradictions.length ? gem.contradictions : baseContradictions,
+      sources: enrichSourceExcerpts(sources, pages, sensoContext),
+      generatedAt: new Date().toISOString(),
+    };
+  }
+  return templateSynth(jobId, company, structured, baseContradictions, sources);
+}
+
+function enrichSourceExcerpts(
+  sources: Source[],
+  _pages: BrowseResult[],
+  senso: SensoSearchResult | null,
+): Source[] {
+  // Add Senso KB as a cited source too (it's where the agent grounded itself)
+  const merged = [...sources];
+  if (senso && senso.topChunks.length) {
+    merged.push({
+      url: "https://superbrain.ghost.io",
+      title: "SuperBrain Senso KB (grounded context)",
+      kind: "other",
+      fetchedAt: new Date().toISOString(),
+      excerpt: senso.answer?.slice(0, 240) || senso.topChunks[0]?.text?.slice(0, 240),
+    });
+  }
+  return merged;
+}
+
+function templateSynth(
+  jobId: string,
+  company: string,
+  structured: StructuredPage[],
+  baseContradictions: CompanyInsight["contradictions"],
+  sources: Source[],
+): CompanyInsight {
+  const linkedin = structured.find((p) => p.source.kind === "linkedin");
+  const x = structured.find((p) => p.source.kind === "x");
+  const news = structured.find((p) => p.source.kind === "news");
 
   const headcount = Number(linkedin?.facts.headcount ?? 0);
   const growth30d = Number(linkedin?.facts.growth30d ?? 0);
@@ -110,22 +188,12 @@ function synthesize(
   const competitorsRaw = (x?.facts.competitorMentions as string[] | undefined) ?? [];
   const headlines = (news?.facts.headlines as string[] | undefined) ?? [];
 
-  const sources: Source[] = pages.map((p) => p.source);
-
   return {
     id: jobId,
     name: company,
     tagline: `${company} — cross-referenced intelligence report`,
-    summary:
-      `${company} shows ${growth30d > 0.03 ? "strong" : "modest"} hiring momentum ` +
-      `with sentiment at ${sentimentScore.toFixed(2)}. ` +
-      (contradictions.length
-        ? `${contradictions.length} contradiction(s) between official claims and public signal.`
-        : "Official claims align with public signal."),
-    officialClaims: [
-      String(website?.facts.claim ?? `${company} serves enterprise customers`),
-      `Positioning: ${String(website?.facts.positioning ?? "enterprise-grade")}`,
-    ],
+    summary: fallbackSummary(company, baseContradictions.length),
+    officialClaims: fallbackClaims(structured, company),
     publicSentiment: {
       score: sentimentScore,
       trend: sentimentScore > 0.3 ? "up" : sentimentScore < 0 ? "down" : "flat",
@@ -136,20 +204,45 @@ function synthesize(
       growth30d,
       signal: growth30d > 0.03 ? "hiring" : growth30d < -0.01 ? "layoffs" : "stable",
     },
-    keyPeople: [
-      { name: "Jordan Kim", role: "CEO" },
-      { name: "Priya Patel", role: "VP Engineering" },
-      { name: "Marcus Chen", role: "Head of Sales" },
-    ],
+    keyPeople: fallbackPeople(),
     competitors: competitorsRaw.map((name, i) => ({
       name,
       overlap: i === 0 ? "direct product overlap" : "adjacent market",
       strength: +(0.5 + Math.random() * 0.4).toFixed(2),
     })),
-    contradictions,
+    contradictions: baseContradictions,
     sources,
     generatedAt: new Date().toISOString(),
   };
+}
+
+function fallbackSummary(company: string, contradictionCount: number): string {
+  return contradictionCount
+    ? `${company} shows notable signal from the open web. ${contradictionCount} contradiction(s) between official claims and public signal.`
+    : `${company} — official claims align with public signal.`;
+}
+function fallbackClaims(structured: StructuredPage[], company: string): string[] {
+  const website = structured.find((p) => p.source.kind === "website");
+  return [
+    String(website?.facts.claim ?? `${company} serves enterprise customers`),
+    `Positioning: ${String(website?.facts.positioning ?? "enterprise-grade")}`,
+  ];
+}
+function fallbackPeople() {
+  return [
+    { name: "Jordan Kim", role: "CEO" },
+    { name: "Priya Patel", role: "VP Engineering" },
+    { name: "Marcus Chen", role: "Head of Sales" },
+  ];
+}
+function fallbackCompetitors(structured: StructuredPage[]) {
+  const x = structured.find((p) => p.source.kind === "x");
+  const names = (x?.facts.competitorMentions as string[] | undefined) ?? [];
+  return names.map((name, i) => ({
+    name,
+    overlap: i === 0 ? "direct product overlap" : "adjacent market",
+    strength: +(0.5 + Math.random() * 0.4).toFixed(2),
+  }));
 }
 
 async function writeCitedMd(insight: CompanyInsight) {

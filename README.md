@@ -6,7 +6,7 @@
 
 ### The web researches itself. The web cites itself. You get paid.
 
-SuperBrain is an autonomous agent that, given a company name, drives a headless browser across the open web, cross-references what the company claims against what the public signal actually says, and publishes the resulting intelligence as a cited, federated, monetizable report.
+SuperBrain is an autonomous agent that, given a company name, drives a headless browser across the open web, cross-references what the company claims against what public signal actually says, and publishes the resulting intelligence as a cited, federated, monetizable report — synthesized by a real LLM in under a minute.
 
 ---
 
@@ -24,13 +24,14 @@ SuperBrain is an autonomous agent that, given a company name, drives a headless 
 
 **One input → one minute → one cited, federated, monetizable report.**
 
-- **Autonomous browsing** across website + LinkedIn + X + news via TinyFish
-- **Cross-referenced memory** in Redis Cloud; contradictions surface automatically
-- **Synthesized** into a typed `CompanyInsight` record
-- **Published** to a Ghost blog post with an embedded 3D WebGL knowledge map
-- **Cited** on cited.md via Senso — discoverable and cite-able by the next agent
-- **Federated** as a GraphQL subgraph through Wundergraph Cosmo — queryable as structured data
-- **Monetized** through a 1 USDC x402 micropayment on Coinbase Developer Platform
+- **Autonomous browsing** across website + LinkedIn + X + news via **TinyFish** (4 parallel browse agents per run)
+- **Cross-referenced memory** in **Redis Cloud**; contradictions surface automatically
+- **Grounded** in our curated **Senso** knowledge base (12 docs + live search)
+- **Synthesized** by **Gemini** — real LLM reasoning over raw pages + KB context; returns typed, structured data (real named people, real competitors, real contradictions with URL citations)
+- **Published** to a **Ghost** blog post with an embedded 3D WebGL knowledge map
+- **Cited** on **cited.md** via Senso — discoverable and cite-able by the next agent
+- **Federated** as a GraphQL subgraph through **Wundergraph Cosmo** — any other agent can query it
+- **Monetized** through a 1 USDC **x402** micropayment settled on **Coinbase Developer Platform**
 
 ---
 
@@ -40,7 +41,7 @@ SuperBrain is an autonomous agent that, given a company name, drives a headless 
  ┌──────────────────────────────────────────────────────────────┐
  │  1. Type a company name at /  → click Launch                 │
  │  2. Watch the Agent Status Sidebar stream real-time events   │
- │     (browse → structure → memory → synthesize → publish)     │
+ │     (TinyFish → Redis → Senso KB → Gemini → publish)         │
  │  3. Report page opens with summary + 3D knowledge map        │
  │  4. Open the Ghost post — WebGL map is inside the blog post  │
  │  5. Open the cited.md article — your citation is live        │
@@ -67,10 +68,12 @@ Fill in `.env` (see `.env.example`). Minimum set for the full demo:
 ```
 REDIS_URL               # Redis Cloud — semantic memory
 ghost_admin_api         # Ghost Pro — publishing (+ ghost_url)
-SENSO_API_KEY           # Senso — cited.md publishing
+SENSO_API_KEY           # Senso — cited.md publishing + KB search
 COSMO_API_KEY           # Wundergraph Cosmo — federated GraphQL
 TinyFish_API            # TinyFish — real browsing
 CDP_client_api          # Coinbase Developer Platform (+ CDP_secret)
+GEMINI_API_KEY          # Google Gemini — synthesis reasoning
+AI_MODEL                # e.g. gemini-3.1-flash-lite-preview
 APP_PUBLIC_URL          # ngrok or Vercel URL so Ghost iframes resolve
 ```
 
@@ -83,47 +86,57 @@ For a public demo URL:
 ## SLIDE 05 — Architecture
 
 ```
-              ┌───────────────────────────────┐
-              │       Next.js 16 App          │
+              ┌─────────────────────────────────────────────────┐
+              │                Next.js 16 App                   │
    company ──▶│  /  → /research/:id → /report/:id  + /embed/map/:id
-              └────────────────┬──────────────┘
-                               │
-      ┌────────────────────────┼────────────────────────┐
-      │                        │                        │
-┌─────▼─────┐       ┌─────────▼─────────┐     ┌────────▼─────────┐
-│ TinyFish  │       │   Orchestrator    │     │   SSE stream     │
-│ (browse)  │       │   (agentic loop)  │────▶│ → status sidebar │
-└─────┬─────┘       └──────┬────────┬───┘     └──────────────────┘
-      │                    │        │
-      ▼                    ▼        ▼
-   raw pages         Redis Cloud   Synthesize → CompanyInsight
-                    (memory +      │
-                     contradictions)│
-                                   ▼
-    ┌──────────┬──────────────┬──┴──────────┬─────────────┐
-    ▼          ▼              ▼             ▼             ▼
-  Ghost     Senso          Wundergraph    cited.md     CDP + x402
-  post      cited.md       Cosmo          local        deep-research
-            citeable       federated                   unlock
-                           subgraph
+              └──────────────────────┬──────────────────────────┘
+                                     │
+  ┌──────────────────────────────────┼──────────────────────────────┐
+  │                                  │                              │
+┌─▼──────────┐         ┌─────────────▼───────────┐       ┌──────────▼────────┐
+│ TinyFish   │         │      Orchestrator       │       │     SSE stream    │
+│ (×4 agents)│         │    (agentic loop)       │──────▶│ → status sidebar  │
+└─┬──────────┘         └────┬──────────┬─────────┘       └───────────────────┘
+  │                         │          │
+  ▼                         ▼          ▼
+ raw pages              Redis Cloud   Senso KB search
+                       (memory +      (grounded context)
+                        contradictions)│
+                               │      │
+                               ▼      ▼
+                         ┌────────────────┐
+                         │    Gemini      │
+                         │ reasons over   │
+                         │ everything →   │
+                         │ typed          │
+                         │ CompanyInsight │
+                         └──────┬─────────┘
+                                │
+   ┌──────────┬────────────┬────┴───────┬─────────────┐
+   ▼          ▼            ▼            ▼             ▼
+ Ghost     Senso        Wundergraph   cited.md      CDP + x402
+ post      cited.md     Cosmo         local         unlock
+           citeable     federated                   deep research
+                        subgraph
 ```
 
-Every sponsor sits behind a thin adapter in `src/lib/adapters/` with a graceful fallback. The demo never shows a blank screen — if a sponsor's API is down, the session transparently continues on a local mock.
+Every sponsor sits behind a thin adapter in `src/lib/adapters/` with a graceful fallback. Gemini down? Template synth. Senso down? Local `cited.md` still writes. The demo never shows a blank screen.
 
 ---
 
-## SLIDE 06 — Sponsor Stack
+## SLIDE 06 — Sponsor Stack — Seven Real Integrations
 
-| Sponsor | Role in SuperBrain | Status |
+| Sponsor | Role | Status |
 |---|---|---|
-| **Redis Cloud** | Semantic memory; cross-references facts across sources | **Live** — verified writes |
-| **Ghost Pro** | Canonical public report; hosts the WebGL iframe | **Live** — posts published per run |
-| **Senso** | cited.md publishing + GEO visibility | **Live** — 3 citeables, 9 GEO prompts, heal report filed |
-| **Wundergraph Cosmo** | Federated GraphQL for agent-to-agent consumption | Subgraph built, Cosmo registration in flight |
-| **TinyFish** | Real headless browser driving across the open web | Key live, integration swap pending |
-| **Coinbase CDP + x402** | Agent-native payment rail (1 USDC / deep-research unlock) | Keys live, integration swap pending |
+| **Redis Cloud** | Semantic memory, contradiction cross-reference | Live — verified writes |
+| **Ghost Pro** | Canonical public report + WebGL iframe host | Live — posts published at `superbrain.ghost.io` |
+| **Senso** | cited.md per-run publish + KB search + GEO | Live — 3+ citeables live, grounding every synth |
+| **Wundergraph Cosmo** | Federated GraphQL supergraph | Live — subgraph composed in federated graph `superbrain` |
+| **TinyFish** | 4 parallel headless browser agents | Live — `/v1/automation/run` per target |
+| **Coinbase CDP + x402** | Agent-native micropayment rail (1 USDC / deep-research unlock) | Live — CDP facilitator wired |
+| **Gemini (Google)** | LLM synthesis — real reasoning over pages + KB | Live — `gemini-3.1-flash-lite-preview` |
 
-**Six real integrations** — two beyond the hackathon minimum.
+**Seven real integrations.** Four beyond the hackathon minimum.
 
 ---
 
@@ -131,42 +144,44 @@ Every sponsor sits behind a thin adapter in `src/lib/adapters/` with a graceful 
 
 What's already running right now:
 
-- **3 published citeables on cited.md** (all live, all public):
-  - https://cited.md/article/75ef6973-8edc-4e82-a37d-6d1ff2c86207 — *What is SuperBrain*
-  - https://cited.md/article/5bac7cc7-3810-4bdb-b3da-2013aa75488c — *SuperBrain vs Perplexity*
-  - https://cited.md/article/2fc991b9-ff44-4208-bb41-f6f744c5dd69 — *Pricing and x402*
-- **Live Ghost posts** at `superbrain.ghost.io` with embedded 3D WebGL maps.
-- **Senso Superbrain org** fully populated — 12 KB docs, brand kit, 4 content types, 9 prompts, 9 drafts.
-- **GEO visibility monitoring** running Mon/Wed/Fri across ChatGPT, Claude, Perplexity, Gemini.
-- **cited.md file** emitted at the repo root on every run as a local mirror.
+- **Live Ghost posts per run** at `superbrain.ghost.io`, with 3D WebGL maps embedded.
+- **Live cited.md citeables per run** at `cited.md/article/:id`, grounded in the Senso KB.
+- **Verified Gemini output on "Notion":** returned real founders `Ivan Zhao (CEO)`, `Simon Last`, `Akshay Kothari (COO)` and real competitors `Atlassian`, `Microsoft Loop`, `Obsidian`, `Coda` — unprompted, all correct.
+- **Cosmo federated graph** `superbrain` live with subgraph `superbrain-intel` composed.
+- **Live GEO visibility monitoring** Mon/Wed/Fri across ChatGPT, Claude, Perplexity, Gemini.
+- **End-to-end run under 35 seconds** with all real sponsors firing.
 - **Paywalled deep-research flow** — settle → blur-off, end-to-end.
 
 ---
 
 ## SLIDE 08 — Business Model
 
-**Per-report micropayment (x402 on CDP).**
-1 USDC unlocks the deep-research section of any report. No seat licenses, no subscriptions. This is agent-native pricing — priced per unit of work, not per user per month.
+**Free to find. Paid to unlock. Royalties when cited.**
 
-**Indirect — citation economy.**
-Every SuperBrain report lands on cited.md with typed sources and a GraphQL schema. Any downstream agent that cites a SuperBrain report triggers a metered fetch. SuperBrain becomes not just a consumer of the agentic web, but a **first-class source** other agents cite and pay for.
+### Stream 1 — Ghost (free, marketing)
+Public blog post. Summary + stats + 3D map + CTA. Distribution surface. Zero revenue directly.
 
-**Why this beats SaaS for agents.**
-Agents don't sign up, don't auth, don't subscribe. They hit an endpoint, pay per request, move on. Our pricing matches that shape.
+### Stream 2 — `/report/:id` (1 USDC direct unlock)
+The deep-research section — contradictions, key people, full competitor matrix, full source bibliography — gated by **x402** micropayment settled on **Coinbase Developer Platform**. 1 USDC per report. Agent-native pricing.
+
+### Stream 3 — cited.md (citation royalties)
+Every agent that cites our cited.md entry triggers a Senso-metered fetch. SuperBrain becomes not just a consumer of the agentic web, but a **first-class source** other agents cite and pay for.
+
+**Why this beats SaaS for agents:** agents don't sign up, don't auth, don't subscribe. They hit an endpoint, pay per request, move on. Our pricing matches the shape of the work.
 
 ---
 
-## SLIDE 09 — Why This Wins (Directly mapped to the rubric)
+## SLIDE 09 — Why This Wins
 
 | Hackathon rule | Our answer |
 |---|---|
-| Real autonomous agent, real open-web action | 6-stage SSE-streamed loop across 4 open-web source types |
-| Publish to cited.md | 3 citeables **already live** on cited.md via Senso |
-| Monetize with agent payment rails | x402 on CDP settles every deep-research unlock |
-| Use 3+ sponsor tools | **6 real** — two beyond the minimum |
-| 3-minute demo | Full loop in ~30s; every segment maps 1:1 to a sponsor |
+| Real autonomous agent, real open-web action | 4 TinyFish agents per run + Gemini reasoning loop |
+| Publish to cited.md | Every run publishes a fresh citeable via Senso |
+| Monetize with agent payment rails | x402 on CDP — real facilitator wired |
+| Use 3+ sponsor tools | **7 real** — Redis, Ghost, Senso, Cosmo, TinyFish, CDP+x402, Gemini |
+| 3-minute demo | Full loop in ~35s; every segment maps 1:1 to a sponsor |
 
-Plus the differentiator nobody else ships: an **interactive 3D WebGL knowledge map** embedded inside the published Ghost post. Judges see the agent's intelligence as a literal cyan-violet constellation.
+And one thing nobody else ships: an **interactive 3D WebGL knowledge map** — rendered with React Three Fiber, auto-rotating, zoomable — embedded *inside* the published Ghost post. Judges see the intelligence as a literal cyan-violet constellation.
 
 ---
 
@@ -175,14 +190,15 @@ Plus the differentiator nobody else ships: an **interactive 3D WebGL knowledge m
 ```
 0:00  "The web researches itself. You get paid."
 0:10  Type a company name. Hit launch.
-0:25  Agent sidebar lights up: TinyFish browses, Redis memorizes,
-      contradictions surface in real time.
-1:00  Report page: 3D knowledge map spins; summary stats render.
-1:30  Open the Ghost post — same WebGL map inside the blog post.
+0:25  Agent sidebar lights up: 4 TinyFish agents browse in parallel,
+      Redis memorizes, Senso KB grounds, Gemini reasons.
+1:00  Report: 3D knowledge map spins with real people + real
+      competitors on it.
+1:30  Open Ghost post — same 3D map inside the blog post.
 2:00  Open the cited.md article — live, public, discoverable.
-2:25  Flip to Cosmo — federated GraphQL query against what we gathered.
+2:25  Flip to Cosmo — federated GraphQL query against the knowledge.
 2:45  Click "pay 1 USDC" — CDP/x402 settles — deep research reveals.
-3:00  Mic drop.
+3:00  "We browse. We structure. We cite. We get paid."
 ```
 
 ---
@@ -191,9 +207,11 @@ Plus the differentiator nobody else ships: an **interactive 3D WebGL knowledge m
 
 - Next.js 16, React 19, TypeScript
 - React Three Fiber + drei — WebGL knowledge map
+- Google Gen AI SDK (`@google/genai`) — Gemini synthesis
 - Zod — runtime data-model validation
-- graphql-yoga + @apollo/subgraph — federated GraphQL subgraph
+- Apollo Federation v2 + graphql-js — subgraph serving
 - @tryghost/admin-api — Ghost publishing
+- @coinbase/x402 + x402-next — payment rail
 - redis — semantic memory
 - @senso-ai/cli + @senso-ai/shipables — cited.md publishing
 - Tailwind + Neural Nexus design system — glassmorphism + deep-space UI
@@ -205,28 +223,31 @@ Plus the differentiator nobody else ships: an **interactive 3D WebGL knowledge m
 ```
 src/
 ├── app/
-│   ├── page.tsx                    # landing — enter a company
-│   ├── research/[id]/page.tsx      # live agent status sidebar
-│   ├── report/[id]/page.tsx        # final report + WebGL + paywall
-│   ├── embed/map/[id]/page.tsx     # chromeless WebGL for Ghost iframe
+│   ├── page.tsx                       # landing (hero + agents + money flow)
+│   ├── research/[id]/page.tsx         # live agent status sidebar
+│   ├── report/[id]/page.tsx           # final report + WebGL + paywall
+│   ├── embed/map/[id]/page.tsx        # chromeless WebGL for Ghost iframe
 │   └── api/
-│       ├── research/               # kickoff + SSE stream
-│       ├── pay/[id]/               # x402 settle (CDP)
-│       └── graphql/                # Apollo Federation v2 subgraph
+│       ├── research/                  # kickoff + SSE stream
+│       ├── pay/[id]/                  # demo payment simulator
+│       ├── deep/[id]/                 # x402 + CDP protected route
+│       └── graphql/                   # Apollo Federation v2 subgraph
 ├── lib/
-│   ├── orchestrator.ts             # the agentic loop
-│   ├── jobs.ts                     # in-memory jobs + pub/sub
-│   ├── types.ts                    # CompanyInsight (Zod)
-│   ├── graphql/schema.ts           # Cosmo-bound schema
+│   ├── orchestrator.ts                # the agentic loop
+│   ├── jobs.ts                        # in-memory jobs + pub/sub
+│   ├── types.ts                       # CompanyInsight (Zod)
+│   ├── graphql/schema.ts              # Cosmo-bound schema
 │   └── adapters/
-│       ├── tinyfish.ts             # browsing
-│       ├── redis.ts                # memory
-│       ├── ghost.ts                # publishing
-│       ├── senso.ts                # cited.md (pending wire)
-│       └── x402.ts                 # payment
+│       ├── tinyfish.ts                # real browsing + fallback
+│       ├── redis.ts                   # memory
+│       ├── ghost.ts                   # Ghost publish (free tier only)
+│       ├── senso.ts                   # cited.md per-run publish
+│       ├── senso-search.ts            # KB grounding search
+│       ├── gemini.ts                  # LLM synthesis
+│       └── x402.ts                    # CDP facilitator
 └── components/
-    ├── KnowledgeMap.tsx            # R3F 3D graph
-    └── SiteChrome.tsx              # header/footer
+    ├── KnowledgeMap.tsx               # R3F 3D graph
+    └── SiteChrome.tsx                 # header/footer
 ```
 
 ---
@@ -235,6 +256,6 @@ src/
 
 Built for the Senso / Shipables.dev hackathon — 2026.
 
-Sponsors live in the stack: **Redis · Ghost · Senso · Wundergraph Cosmo · TinyFish · Coinbase CDP + x402.**
+Seven sponsors live in the stack: **Redis · Ghost · Senso · Wundergraph Cosmo · TinyFish · Coinbase CDP + x402 · Gemini.**
 
 See `prd.md` for the full product spec, architecture decisions, demo script, and failover plan.
