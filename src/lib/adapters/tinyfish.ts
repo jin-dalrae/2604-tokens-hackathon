@@ -32,8 +32,10 @@ export async function browse(target: BrowseTarget): Promise<BrowseResult> {
         "X-API-Key": TF_KEY,
       },
       body: JSON.stringify({ url: target.url, goal: target.goal }),
-      // TinyFish /run blocks until completion — cap at 60s per target
-      signal: AbortSignal.timeout(60_000),
+      // TinyFish /run blocks until completion. Each target runs in parallel,
+      // so we cap at 25s per call to keep the full demo budget under 30s even
+      // when 2-3 targets are slow.
+      signal: AbortSignal.timeout(25_000),
     });
     if (!res.ok) {
       console.error("[tinyfish] non-2xx", res.status, await res.text().catch(() => ""));

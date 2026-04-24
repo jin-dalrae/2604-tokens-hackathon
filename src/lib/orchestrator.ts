@@ -67,6 +67,12 @@ export async function runAgent(jobId: string, origin: string): Promise<void> {
         label: "Cited on cited.md (Senso)",
         sourceUrl: senso.citedUrl,
       });
+    } else {
+      emit(jobId, {
+        kind: "publish",
+        label: "Senso publish skipped",
+        detail: senso.error || "no API key",
+      });
     }
 
     updateJob(jobId, {

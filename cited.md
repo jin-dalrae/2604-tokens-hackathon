@@ -1,16 +1,16 @@
-# Sources for vercel
+# Sources for Linear
 
-_Generated 2026-04-24T22:17:00.320Z_
+_Generated 2026-04-24T22:39:56.234Z_
 
-- [vercel — official site](https://vercel.com) — _website_, fetched 2026-04-24T22:16:57.567Z
-  > vercel positions itself as a leading platform with enterprise customers.
-- [vercel — LinkedIn](https://www.linkedin.com/company/vercel) — _linkedin_, fetched 2026-04-24T22:16:58.343Z
-  > vercel headcount grew ~4% in the last 30 days; heavy hiring in eng & sales.
-- [vercel — X / Twitter](https://x.com/search?q=vercel) — _x_, fetched 2026-04-24T22:16:59.055Z
-  > Mentions of vercel trend positive, with occasional concern about pricing.
-- [vercel — news](https://news.google.com/search?q=vercel) — _news_, fetched 2026-04-24T22:16:59.822Z
-  > Recent coverage of vercel focuses on product launches and funding.
+- [Linear — official site](https://linear.com) — _website_, fetched 2026-04-24T22:39:55.780Z
+  > Linear positions itself as a leading platform with enterprise customers.
+- [Linear — LinkedIn](https://www.linkedin.com/company/linear) — _linkedin_, fetched 2026-04-24T22:39:55.781Z
+  > Linear headcount grew ~4% in the last 30 days; heavy hiring in eng & sales.
+- [Linear — X / Twitter](https://x.com/search?q=Linear) — _x_, fetched 2026-04-24T22:39:55.782Z
+  > Mentions of Linear trend positive, with occasional concern about pricing.
+- [Linear — news](https://news.google.com/search?q=Linear) — _news_, fetched 2026-04-24T22:39:55.784Z
+  > Recent coverage of Linear focuses on product launches and funding.
 
 ## Contradictions
-- **vercel serves Fortune 500 customers** — official: https://vercel.com; counter: https://x.com/search?q=vercel
+- **Linear serves Fortune 500 customers** — official: https://linear.com; counter: https://x.com/search?q=Linear
   > Public mentions highlight pricing friction and churn risk.
