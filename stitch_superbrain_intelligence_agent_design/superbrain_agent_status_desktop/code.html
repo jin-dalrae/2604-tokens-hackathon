@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            backdrop-filter: blur(40px);
+            background: rgba(19, 19, 20, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .edge-light-tl {
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            border-left: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+        }
+        .scanline {
+            background: linear-gradient(to bottom, transparent 50%, rgba(0, 240, 255, 0.05) 50%);
+            background-size: 100% 4px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-container": "#585e6e",
+                      "surface-container-highest": "#353436",
+                      "on-error": "#690005",
+                      "inverse-surface": "#e5e2e3",
+                      "on-tertiary-fixed": "#151b29",
+                      "surface": "#131314",
+                      "surface-container-high": "#2a2a2b",
+                      "on-surface-variant": "#b9cacb",
+                      "on-secondary": "#520072",
+                      "primary": "#dbfcff",
+                      "inverse-on-surface": "#313031",
+                      "on-primary-container": "#006970",
+                      "surface-dim": "#131314",
+                      "on-tertiary": "#2a303e",
+                      "surface-variant": "#353436",
+                      "on-primary": "#00363a",
+                      "outline-variant": "#3b494b",
+                      "inverse-primary": "#006970",
+                      "primary-fixed": "#7df4ff",
+                      "on-background": "#e5e2e3",
+                      "secondary-fixed-dim": "#ebb2ff",
+                      "surface-tint": "#00dbe9",
+                      "secondary": "#ebb2ff",
+                      "error": "#ffb4ab",
+                      "surface-container": "#201f20",
+                      "primary-container": "#00f0ff",
+                      "on-surface": "#e5e2e3",
+                      "on-secondary-fixed-variant": "#74009f",
+                      "surface-container-lowest": "#0e0e0f",
+                      "secondary-container": "#b600f8",
+                      "tertiary-fixed-dim": "#c0c6d8",
+                      "primary-fixed-dim": "#00dbe9",
+                      "outline": "#849495",
+                      "on-secondary-fixed": "#320047",
+                      "on-secondary-container": "#fff6fc",
+                      "on-primary-fixed": "#002022",
+                      "on-tertiary-fixed-variant": "#414756",
+                      "tertiary-fixed": "#dde2f5",
+                      "secondary-fixed": "#f8d8ff",
+                      "on-primary-fixed-variant": "#004f54",
+                      "on-error-container": "#ffdad6",
+                      "tertiary": "#f4f5ff",
+                      "tertiary-container": "#d3d9ec",
+                      "surface-container-low": "#1c1b1c",
+                      "background": "#131314",
+                      "surface-bright": "#3a393a",
+                      "error-container": "#93000a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "4px",
+                      "gutter": "24px",
+                      "container-max": "1440px",
+                      "margin": "40px"
+              },
+              "fontFamily": {
+                      "body-md": ["Inter"],
+                      "label-sm": ["Space Grotesk"],
+                      "data-mono": ["Space Grotesk"],
+                      "headline-xl": ["Inter"],
+                      "headline-md": ["Inter"]
+              },
+              "fontSize": {
+                      "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                      "data-mono": ["14px", {"lineHeight": "1.5", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "headline-xl": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-md": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary-container selection:text-on-primary-fixed">
+<!-- SideNavBar (JSON Derived) -->
+<aside class="fixed left-0 top-0 h-full w-64 border-r border-white/10 bg-slate-950/80 backdrop-blur-2xl flex flex-col h-full z-50">
+<div class="px-6 py-8">
+<h1 class="text-xl font-black tracking-tighter text-cyan-400 drop-shadow-[0_0_10px_rgba(0,240,255,0.4)]">SYNTH-INTEL</h1>
+<p class="font-['Inter'] tracking-tight text-sm uppercase font-semibold text-slate-400 mt-1">Active Session: Agent-01</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Neural Dashboard (Active) -->
+<a class="text-cyan-400 bg-cyan-400/10 border-r-2 border-cyan-400 flex items-center gap-3 px-6 py-4 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Neural Dashboard</span>
+</a>
+<a class="text-slate-500 hover:text-slate-200 hover:bg-white/5 hover:backdrop-blur-sm flex items-center gap-3 px-6 py-4 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="insights">insights</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Intelligence Feed</span>
+</a>
+<a class="text-slate-500 hover:text-slate-200 hover:bg-white/5 hover:backdrop-blur-sm flex items-center gap-3 px-6 py-4 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="sensors">sensors</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Data Streams</span>
+</a>
+<a class="text-slate-500 hover:text-slate-200 hover:bg-white/5 hover:backdrop-blur-sm flex items-center gap-3 px-6 py-4 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Synthesis Matrix</span>
+</a>
+<a class="text-slate-500 hover:text-slate-200 hover:bg-white/5 hover:backdrop-blur-sm flex items-center gap-3 px-6 py-4 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Archived Intel</span>
+</a>
+</nav>
+<div class="p-6 border-t border-white/10">
+<button class="w-full bg-cyan-400/10 border border-cyan-400/50 text-cyan-400 py-3 rounded font-['Inter'] text-sm font-bold uppercase tracking-widest hover:bg-cyan-400 hover:text-slate-900 transition-all active:scale-95">
+                Initiate Synthesis
+            </button>
+</div>
+<div class="pb-8 space-y-1">
+<a class="text-slate-500 hover:text-slate-200 flex items-center gap-3 px-6 py-3 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">System Settings</span>
+</a>
+<a class="text-slate-500 hover:text-slate-200 flex items-center gap-3 px-6 py-3 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="power_settings_new">power_settings_new</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Terminal Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 min-h-screen flex flex-col">
+<!-- TopAppBar (JSON Derived) -->
+<header class="sticky top-0 w-full border-b border-white/10 z-40 bg-slate-950/40 backdrop-blur-lg flex items-center justify-between px-8 py-3">
+<div class="flex items-center gap-4 flex-1">
+<div class="flex items-center bg-slate-900/50 border border-white/10 px-3 py-1.5 rounded w-96">
+<span class="material-symbols-outlined text-slate-500 text-sm" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-xs font-data-mono text-cyan-400 placeholder:text-slate-600 w-full" placeholder="QUERY SYNTH_NETWORK..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-slate-400 cursor-pointer hover:text-cyan-400 transition-colors" data-icon="notifications_active">notifications_active</span>
+<span class="material-symbols-outlined text-slate-400 cursor-pointer hover:text-cyan-400 transition-colors" data-icon="dns">dns</span>
+<span class="material-symbols-outlined text-slate-400 cursor-pointer hover:text-cyan-400 transition-colors" data-icon="account_tree">account_tree</span>
+</div>
+<div class="h-8 w-8 rounded-full border border-cyan-400/30 overflow-hidden">
+<img alt="Agent Profile" class="h-full w-full object-cover" data-alt="abstract digital avatar with glowing cyan data points and circuit lines on a deep black background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAg6WSITJjy3rPDLZbPhfpcB7UiNQgMsxAoJMTLNUsi4oTN2HVKFIbIpfh2I5lFoU4afgtaO4NEm6iry9Y_jJo767AdSAFBx1qUnfHH1DPdSSYciS7-MWIdWkYm3-3TlPvtcd3_kH5qAug8myeY9YU2-a07QSnbFVWe4l8f6SApQkzyggrhNcdS1OJeJQP7gpgF99aDydelv_KkW-zt3ikaEwNDGYxBhVzqCEbiM_6D9GYl_PoOTvyqJcd-cEbl26Nepg7elJQBiGc"/>
+</div>
+</div>
+</header>
+<!-- Dashboard Canvas -->
+<div class="p-gutter flex gap-gutter flex-1 h-[calc(100vh-64px)] overflow-hidden">
+<!-- Main Agent Log Stream -->
+<section class="flex-[2] glass-panel edge-light-tl rounded-xl flex flex-col overflow-hidden relative">
+<div class="scanline absolute inset-0 pointer-events-none opacity-20"></div>
+<div class="p-6 border-b border-white/10 flex justify-between items-center bg-white/5">
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-cyan-400 animate-pulse glow-cyan"></div>
+<h2 class="font-headline-md text-primary tracking-tighter">TinyFish Agent Log</h2>
+</div>
+<div class="flex gap-2">
+<span class="px-2 py-1 bg-cyan-400/10 text-[10px] font-data-mono text-cyan-400 border border-cyan-400/20 rounded">AUTO_BROWSE: ON</span>
+<span class="px-2 py-1 bg-violet-500/10 text-[10px] font-data-mono text-secondary border border-secondary/20 rounded">SEMANTIC_LOCK: TRUE</span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto p-6 font-data-mono text-sm space-y-4">
+<div class="flex gap-4 border-l-2 border-cyan-400/30 pl-4 py-1">
+<span class="text-slate-600 shrink-0">[14:02:11.04]</span>
+<p class="text-cyan-100"><span class="text-cyan-400">INIT:</span> Sequential memory crawl initiated for <span class="text-secondary">@context_vector_04</span></p>
+</div>
+<div class="flex gap-4 border-l-2 border-slate-700 pl-4 py-1">
+<span class="text-slate-600 shrink-0">[14:02:11.89]</span>
+<p class="text-slate-400">STATUS: Crawling target nodes in decentralized knowledge graph...</p>
+</div>
+<div class="flex gap-4 border-l-2 border-white/40 pl-4 py-1 bg-white/5 rounded-r">
+<span class="text-slate-600 shrink-0">[14:02:12.45]</span>
+<p class="text-on-surface">ACTION: Extracting metadata from <span class="underline decoration-cyan-400/50 cursor-pointer">arxiv.org/abs/2403.00192</span></p>
+</div>
+<div class="flex gap-4 border-l-2 border-cyan-400/30 pl-4 py-1">
+<span class="text-slate-600 shrink-0">[14:02:13.12]</span>
+<p class="text-cyan-100"><span class="text-cyan-400">SYNTH:</span> Pattern recognized. Correlating with Redis segment <span class="text-secondary">mem_shards_09</span></p>
+</div>
+<div class="flex gap-4 border-l-2 border-error/50 pl-4 py-1">
+<span class="text-slate-600 shrink-0">[14:02:13.98]</span>
+<p class="text-error/80">WARN: Rate limit encountered on node <span class="font-bold">alpha-7</span>. Rotating proxy vectors...</p>
+</div>
+<div class="flex gap-4 border-l-2 border-cyan-400/30 pl-4 py-1">
+<span class="text-slate-600 shrink-0">[14:02:14.55]</span>
+<p class="text-cyan-100"><span class="text-cyan-400">RESUME:</span> Browsing successfully restored. Parsing HTML semantic layers.</p>
+</div>
+<div class="flex gap-4 border-l-2 border-slate-700 pl-4 py-1">
+<span class="text-slate-600 shrink-0">[14:02:15.21]</span>
+<p class="text-slate-400">DEBUG: 24 active browser threads synchronized.</p>
+</div>
+<!-- Repeating for visual density -->
+<div class="flex gap-4 border-l-2 border-cyan-400/30 pl-4 py-1">
+<span class="text-slate-600 shrink-0">[14:02:16.02]</span>
+<p class="text-cyan-100"><span class="text-cyan-400">ACTION:</span> Submitting summary to intelligence feed.</p>
+</div>
+</div>
+<!-- Active Processing Footer -->
+<div class="p-4 bg-slate-950/60 border-t border-white/10 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-400 to-secondary flex items-center justify-center glow-cyan">
+<span class="material-symbols-outlined text-slate-900 font-bold" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<div>
+<p class="text-xs font-label-sm text-cyan-400 uppercase tracking-widest">Active Synthesis</p>
+<p class="text-[10px] text-slate-500 font-data-mono">PROCESSING: Neural Weights Alignment...</p>
+</div>
+</div>
+<div class="w-48 h-1 bg-slate-800 rounded-full overflow-hidden">
+<div class="w-2/3 h-full bg-gradient-to-r from-cyan-400 to-secondary"></div>
+</div>
+</div>
+</section>
+<!-- Sidebar Analytics -->
+<aside class="flex-1 flex flex-col gap-gutter max-w-sm">
+<!-- Nexla Data Throughput -->
+<div class="glass-panel edge-light-tl rounded-xl p-6 flex flex-col h-1/3">
+<div class="flex justify-between items-start mb-4">
+<h3 class="text-xs font-label-sm text-slate-400 uppercase tracking-widest">Nexla Throughput</h3>
+<span class="material-symbols-outlined text-cyan-400 text-lg" data-icon="speed">speed</span>
+</div>
+<div class="flex-1 flex items-end gap-1.5 pb-2">
+<div class="flex-1 bg-cyan-400/10 h-12 rounded-t-sm border-t border-cyan-400/30"></div>
+<div class="flex-1 bg-cyan-400/20 h-24 rounded-t-sm border-t border-cyan-400/40"></div>
+<div class="flex-1 bg-cyan-400/10 h-16 rounded-t-sm border-t border-cyan-400/30"></div>
+<div class="flex-1 bg-cyan-400/30 h-32 rounded-t-sm border-t border-cyan-400/50 glow-cyan"></div>
+<div class="flex-1 bg-cyan-400/10 h-20 rounded-t-sm border-t border-cyan-400/30"></div>
+<div class="flex-1 bg-cyan-400/15 h-28 rounded-t-sm border-t border-cyan-400/30"></div>
+</div>
+<div class="flex justify-between items-center mt-2">
+<span class="text-[10px] font-data-mono text-slate-500">PEAK: 1.4 GB/S</span>
+<span class="text-sm font-headline-md text-cyan-400">892 MB/s</span>
+</div>
+</div>
+<!-- Redis Semantic Memory -->
+<div class="glass-panel edge-light-tl rounded-xl p-6 flex flex-col h-1/3 relative overflow-hidden">
+<div class="absolute -right-4 -bottom-4 opacity-10">
+<span class="material-symbols-outlined text-8xl" data-icon="memory">memory</span>
+</div>
+<h3 class="text-xs font-label-sm text-slate-400 uppercase tracking-widest mb-4">Redis Memory Usage</h3>
+<div class="flex-1 flex flex-col justify-center">
+<div class="flex justify-between text-xs font-data-mono mb-2">
+<span class="text-slate-300">Semantic Shards</span>
+<span class="text-secondary">74.2%</span>
+</div>
+<div class="w-full h-3 bg-slate-900 rounded-full border border-white/10 p-0.5">
+<div class="h-full bg-gradient-to-r from-secondary/50 to-secondary rounded-full" style="width: 74%"></div>
+</div>
+<div class="grid grid-cols-2 gap-4 mt-6">
+<div>
+<p class="text-[10px] text-slate-500 font-label-sm uppercase">Active Keys</p>
+<p class="text-lg font-data-mono text-slate-200">2.4M</p>
+</div>
+<div>
+<p class="text-[10px] text-slate-500 font-label-sm uppercase">Latency</p>
+<p class="text-lg font-data-mono text-slate-200">0.4ms</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Sentiment Analysis -->
+<div class="glass-panel edge-light-tl rounded-xl p-6 flex flex-col h-1/3">
+<h3 class="text-xs font-label-sm text-slate-400 uppercase tracking-widest mb-4">Sentiment Analysis</h3>
+<div class="flex-1 flex items-center justify-center">
+<div class="relative w-32 h-32">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-slate-800" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" stroke-width="8"></circle>
+<circle class="text-cyan-400" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" stroke-dasharray="364.4" stroke-dashoffset="100" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-xl font-headline-md text-primary">0.72</span>
+<span class="text-[10px] font-label-sm text-slate-500 uppercase tracking-widest">Positive</span>
+</div>
+</div>
+</div>
+<div class="flex justify-between gap-2 mt-4">
+<div class="flex-1 h-1 bg-slate-800 rounded-full overflow-hidden">
+<div class="w-full h-full bg-cyan-400"></div>
+</div>
+<div class="flex-1 h-1 bg-slate-800 rounded-full overflow-hidden">
+<div class="w-1/3 h-full bg-secondary"></div>
+</div>
+<div class="flex-1 h-1 bg-slate-800 rounded-full overflow-hidden">
+<div class="w-1/4 h-full bg-error"></div>
+</div>
+</div>
+</div>
+</aside>
+</div>
+<!-- Floating Action Component (Only shown on home/dashboard as per mandate) -->
+<div class="fixed bottom-10 right-10 z-50">
+<button class="bg-gradient-to-tr from-cyan-500 to-secondary p-4 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all glow-cyan group">
+<span class="material-symbols-outlined text-slate-900 text-3xl font-bold group-hover:rotate-45 transition-transform" data-icon="add">add</span>
+</button>
+</div>
+</main>
+</body></html>

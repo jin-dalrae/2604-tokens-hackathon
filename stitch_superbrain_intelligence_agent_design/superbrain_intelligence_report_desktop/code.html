@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SYNTH-INTEL | Intelligence Report</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#585e6e",
+                        "surface-container-highest": "#353436",
+                        "on-error": "#690005",
+                        "inverse-surface": "#e5e2e3",
+                        "on-tertiary-fixed": "#151b29",
+                        "surface": "#131314",
+                        "surface-container-high": "#2a2a2b",
+                        "on-surface-variant": "#b9cacb",
+                        "on-secondary": "#520072",
+                        "primary": "#dbfcff",
+                        "inverse-on-surface": "#313031",
+                        "on-primary-container": "#006970",
+                        "surface-dim": "#131314",
+                        "on-tertiary": "#2a303e",
+                        "surface-variant": "#353436",
+                        "on-primary": "#00363a",
+                        "outline-variant": "#3b494b",
+                        "inverse-primary": "#006970",
+                        "primary-fixed": "#7df4ff",
+                        "on-background": "#e5e2e3",
+                        "secondary-fixed-dim": "#ebb2ff",
+                        "surface-tint": "#00dbe9",
+                        "secondary": "#ebb2ff",
+                        "error": "#ffb4ab",
+                        "surface-container": "#201f20",
+                        "primary-container": "#00f0ff",
+                        "on-surface": "#e5e2e3",
+                        "on-secondary-fixed-variant": "#74009f",
+                        "surface-container-lowest": "#0e0e0f",
+                        "secondary-container": "#b600f8",
+                        "tertiary-fixed-dim": "#c0c6d8",
+                        "primary-fixed-dim": "#00dbe9",
+                        "outline": "#849495",
+                        "on-secondary-fixed": "#320047",
+                        "on-secondary-container": "#fff6fc",
+                        "on-primary-fixed": "#002022",
+                        "on-tertiary-fixed-variant": "#414756",
+                        "tertiary-fixed": "#dde2f5",
+                        "secondary-fixed": "#f8d8ff",
+                        "on-primary-fixed-variant": "#004f54",
+                        "on-error-container": "#ffdad6",
+                        "tertiary": "#f4f5ff",
+                        "tertiary-container": "#d3d9ec",
+                        "surface-container-low": "#1c1b1c",
+                        "background": "#131314",
+                        "surface-bright": "#3a393a",
+                        "error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "gutter": "24px",
+                        "container-max": "1440px",
+                        "margin": "40px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "label-sm": ["Space Grotesk"],
+                        "data-mono": ["Space Grotesk"],
+                        "headline-xl": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "1.6", "letterSpacing": "0", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.1em", "fontWeight": "600"}],
+                        "data-mono": ["14px", {"lineHeight": "1.5", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "headline-xl": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(20, 20, 25, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 1px solid transparent;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.15) 0%, transparent 50%, rgba(182, 0, 248, 0.05) 100%) border-box;
+            -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: destination-out;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        .glow-cyan {
+            box-shadow: 0 0 25px -5px rgba(0, 240, 255, 0.2);
+        }
+        .node-line {
+            background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.4), transparent);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary-container selection:text-on-primary-fixed">
+<!-- Side Navigation Shell -->
+<aside class="fixed left-0 top-0 h-full w-64 border-r border-white/10 bg-slate-950/80 backdrop-blur-2xl flex flex-col h-full z-50">
+<div class="px-6 py-8">
+<h1 class="text-xl font-black tracking-tighter text-cyan-400 drop-shadow-[0_0_10px_rgba(0,240,255,0.4)]">SYNTH-INTEL</h1>
+<p class="font-['Inter'] tracking-tight text-sm uppercase font-semibold text-slate-400 mt-1">Active Session: Agent-01</p>
+</div>
+<nav class="flex-1">
+<ul class="space-y-1">
+<li>
+<a class="text-slate-500 hover:text-slate-200 flex items-center gap-3 px-6 py-4 transition-colors hover:bg-white/5 hover:backdrop-blur-sm" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Neural Dashboard</span>
+</a>
+</li>
+<li>
+<a class="text-cyan-400 bg-cyan-400/10 border-r-2 border-cyan-400 flex items-center gap-3 px-6 py-4 transition-all hover:bg-white/5" href="#">
+<span class="material-symbols-outlined">insights</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Intelligence Feed</span>
+</a>
+</li>
+<li>
+<a class="text-slate-500 hover:text-slate-200 flex items-center gap-3 px-6 py-4 transition-colors hover:bg-white/5 hover:backdrop-blur-sm" href="#">
+<span class="material-symbols-outlined">sensors</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Data Streams</span>
+</a>
+</li>
+<li>
+<a class="text-slate-500 hover:text-slate-200 flex items-center gap-3 px-6 py-4 transition-colors hover:bg-white/5 hover:backdrop-blur-sm" href="#">
+<span class="material-symbols-outlined">psychology</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Synthesis Matrix</span>
+</a>
+</li>
+<li>
+<a class="text-slate-500 hover:text-slate-200 flex items-center gap-3 px-6 py-4 transition-colors hover:bg-white/5 hover:backdrop-blur-sm" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Archived Intel</span>
+</a>
+</li>
+</ul>
+</nav>
+<div class="px-6 py-6 border-t border-white/10">
+<button class="w-full py-3 bg-cyan-400/10 border border-cyan-400/40 text-cyan-400 rounded-lg font-bold text-sm uppercase tracking-widest hover:bg-cyan-400 hover:text-slate-950 transition-all active:scale-95">
+                Initiate Synthesis
+            </button>
+</div>
+<div class="mt-auto pb-8 space-y-1">
+<a class="text-slate-500 hover:text-slate-200 flex items-center gap-3 px-6 py-3 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">System Settings</span>
+</a>
+<a class="text-slate-500 hover:text-slate-200 flex items-center gap-3 px-6 py-3 transition-colors" href="#">
+<span class="material-symbols-outlined">power_settings_new</span>
+<span class="font-['Inter'] tracking-tight text-sm uppercase font-semibold">Terminal Logout</span>
+</a>
+</div>
+</aside>
+<!-- Top AppBar Shell -->
+<header class="sticky top-0 w-full border-b border-white/10 bg-slate-950/40 backdrop-blur-lg z-40 ml-64 w-[calc(100%-16rem)]">
+<div class="flex items-center justify-between px-8 py-3">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</span>
+<input class="w-full bg-slate-900/50 border border-white/10 rounded-full py-2 pl-10 pr-4 text-xs font-['Inter'] tracking-widest focus:outline-none focus:border-cyan-400 transition-all" placeholder="QUERY NEURAL ARCHIVE..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-slate-400 cursor-pointer hover:text-cyan-300 transition-colors">notifications_active</span>
+<span class="material-symbols-outlined text-slate-400 cursor-pointer hover:text-cyan-300 transition-colors">dns</span>
+<span class="material-symbols-outlined text-slate-400 cursor-pointer hover:text-cyan-300 transition-colors">account_tree</span>
+</div>
+<div class="h-8 w-8 rounded-full border border-cyan-400/50 p-0.5">
+<img alt="User status indicator" class="h-full w-full rounded-full object-cover" data-alt="Modern high-tech user avatar in cinematic lighting with blue neon accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFSKkPAYBVSoy7bHbnpC923X-OSyQSlIn4iBAXVM_Ltwktd3DliHk8Lb7Ph6zzD0UBbWP91iSrRkhlTKRCta9Do0Vcs_j1tUVXtFOJtAc2BLdlHDR9hbGr-ennvWI8GjjyNoejS6o5zwpwCNc7tw2BitpDMBawGcpcrl9x1bOb6YKxrg-4CqhdVh9AGPUqEL8WyZKI7IupLJATomElkc7KiW9YWLjWlFo2KvJcsQKlCAPb9fWvvH2W6v4TrzbgAK0x647mS8dhYHY"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 p-margin">
+<!-- Hero Section: Sentiment Score -->
+<section class="grid grid-cols-12 gap-gutter mb-margin">
+<div class="col-span-12 lg:col-span-8">
+<div class="glass-card p-10 rounded-xl relative">
+<div class="flex justify-between items-start mb-10">
+<div>
+<span class="font-data-mono text-label-sm text-secondary uppercase px-3 py-1 bg-secondary/10 rounded-full border border-secondary/20 mb-4 inline-block">Real-time Analysis</span>
+<h2 class="font-headline-xl text-primary mb-2">Composite Sentiment Score</h2>
+<p class="text-on-surface-variant max-w-lg">Advanced algorithmic aggregation of global market sentiment, social resonance, and predictive volatility markers for Q3 FY24.</p>
+</div>
+<div class="text-right">
+<span class="font-data-mono text-headline-xl text-cyan-400 leading-none">88.4</span>
+<p class="font-label-sm text-cyan-400/60 uppercase tracking-widest">+12.2% INDEX SHIFT</p>
+</div>
+</div>
+<div class="relative h-48 w-full flex items-end gap-2">
+<!-- Simulated Waveform / Chart -->
+<div class="flex-1 bg-cyan-400/20 h-1/4 rounded-t-sm"></div>
+<div class="flex-1 bg-cyan-400/30 h-2/4 rounded-t-sm"></div>
+<div class="flex-1 bg-cyan-400/40 h-3/4 rounded-t-sm"></div>
+<div class="flex-1 bg-cyan-400/60 h-full rounded-t-sm glow-cyan"></div>
+<div class="flex-1 bg-cyan-400/50 h-4/5 rounded-t-sm"></div>
+<div class="flex-1 bg-cyan-400/30 h-2/5 rounded-t-sm"></div>
+<div class="flex-1 bg-cyan-400/40 h-3/5 rounded-t-sm"></div>
+<div class="flex-1 bg-cyan-400/20 h-1/5 rounded-t-sm"></div>
+<div class="flex-1 bg-cyan-400/60 h-3/4 rounded-t-sm glow-cyan"></div>
+<div class="flex-1 bg-cyan-400/40 h-1/2 rounded-t-sm"></div>
+<div class="flex-1 bg-cyan-400/30 h-1/3 rounded-t-sm"></div>
+<div class="flex-1 bg-cyan-400/50 h-5/6 rounded-t-sm glow-cyan"></div>
+</div>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-4 space-y-gutter">
+<div class="glass-card p-6 rounded-xl flex flex-col justify-between h-full">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-cyan-400">psychology</span>
+<h3 class="font-headline-md text-primary">Neural Insight</h3>
+</div>
+<p class="text-body-md text-on-surface-variant italic mb-6 border-l-2 border-secondary/40 pl-4">
+                        "Market fluctuations indicate a pivot toward decentralized synthetic assets within the next 48 hours."
+                    </p>
+<div class="flex gap-2">
+<span class="font-label-sm px-2 py-1 bg-surface-container-high text-on-surface-variant rounded">#PREDICTIVE</span>
+<span class="font-label-sm px-2 py-1 bg-surface-container-high text-on-surface-variant rounded">#VOLATILITY</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Central Knowledge Map -->
+<section class="mb-margin">
+<h3 class="font-headline-md text-primary mb-6 flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">hub</span>
+                Central Knowledge Map
+            </h3>
+<div class="glass-card w-full h-[500px] rounded-xl overflow-hidden relative group">
+<img class="w-full h-full object-cover opacity-60" data-alt="Abstract 3D network graph with glowing lines and interconnected nodes in deep blue and neon violet space" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5vATn5EAhdNy6NdQrK6oospaDg4WgWu5sDWbL2qwgJO-NK-RRi-xAHG-NMQfu-_AyCCMEsLscFbfM9lk31nAcAyywmxM1VKZjdNbY20gSQcsVD2vh7N_zl-eynu2c0YywaBexc2U8llvS1SOTDq1QmiSkURWB6xOscvUWN1v5KNqD6YEzIKWmX3WJqrv9G-SON6Ap4tHROJwraGjbC9YGCcnA8PWdatCSAatiiH88lxnPuec2mI38VFRr7E_6ZWJi3S9A-YXU9Lw"/>
+<!-- Floating Node UI Overlays -->
+<div class="absolute top-1/4 left-1/3 p-4 glass-card rounded-lg border border-cyan-400/30 text-xs font-data-mono hover:scale-105 transition-transform cursor-pointer">
+<div class="text-cyan-400 mb-1">CORE_ALPHA_01</div>
+<div class="text-slate-400">92% Connectivity</div>
+</div>
+<div class="absolute bottom-1/3 right-1/4 p-4 glass-card rounded-lg border border-secondary/30 text-xs font-data-mono hover:scale-105 transition-transform cursor-pointer">
+<div class="text-secondary mb-1">SYNTH_VECTOR_X</div>
+<div class="text-slate-400">Active Synthesis</div>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80 pointer-events-none"></div>
+<div class="absolute bottom-8 left-8">
+<p class="text-label-sm text-slate-500 uppercase tracking-widest mb-2">Navigation Mode</p>
+<div class="flex gap-2">
+<button class="p-2 bg-surface-container-high rounded border border-white/10 text-white hover:bg-cyan-400 hover:text-slate-950 transition-colors">
+<span class="material-symbols-outlined text-sm">zoom_in</span>
+</button>
+<button class="p-2 bg-surface-container-high rounded border border-white/10 text-white hover:bg-cyan-400 hover:text-slate-950 transition-colors">
+<span class="material-symbols-outlined text-sm">zoom_out</span>
+</button>
+<button class="p-2 bg-surface-container-high rounded border border-white/10 text-white hover:bg-cyan-400 hover:text-slate-950 transition-colors">
+<span class="material-symbols-outlined text-sm">3d_rotation</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Competitor Benchmarking -->
+<section class="mb-margin">
+<h3 class="font-headline-md text-primary mb-6">Competitor Benchmarking</h3>
+<div class="glass-card rounded-xl overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low border-b border-white/10">
+<tr>
+<th class="px-6 py-4 font-label-sm text-slate-400 uppercase tracking-widest">Entity Signature</th>
+<th class="px-6 py-4 font-label-sm text-slate-400 uppercase tracking-widest">Growth Δ</th>
+<th class="px-6 py-4 font-label-sm text-slate-400 uppercase tracking-widest">Liquidity Ratio</th>
+<th class="px-6 py-4 font-label-sm text-slate-400 uppercase tracking-widest">Risk Factor</th>
+<th class="px-6 py-4 font-label-sm text-slate-400 uppercase tracking-widest">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/5">
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-6 py-4 font-data-mono text-primary">AETHER_CORP</td>
+<td class="px-6 py-4 text-cyan-400">+14.2%</td>
+<td class="px-6 py-4 text-on-surface-variant">0.82</td>
+<td class="px-6 py-4">
+<div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
+<div class="bg-cyan-400 h-full w-[35%]"></div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-2 text-xs text-cyan-400">
+<span class="h-2 w-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                                    DOMINANT
+                                </span>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-6 py-4 font-data-mono text-primary">NEURAL_DYNAMICS</td>
+<td class="px-6 py-4 text-error">-2.1%</td>
+<td class="px-6 py-4 text-on-surface-variant">0.45</td>
+<td class="px-6 py-4">
+<div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
+<div class="bg-error h-full w-[78%]"></div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-2 text-xs text-error">
+<span class="h-2 w-2 rounded-full bg-error"></span>
+                                    AT_RISK
+                                </span>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors">
+<td class="px-6 py-4 font-data-mono text-primary">QUANTUM_SYS</td>
+<td class="px-6 py-4 text-cyan-400">+3.8%</td>
+<td class="px-6 py-4 text-on-surface-variant">1.12</td>
+<td class="px-6 py-4">
+<div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[12%]"></div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-2 text-xs text-secondary">
+<span class="h-2 w-2 rounded-full bg-secondary"></span>
+                                    STABLE
+                                </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Unlock Deep Research Paywall -->
+<section class="mb-margin">
+<div class="glass-card rounded-2xl p-1 w-full bg-gradient-to-br from-cyan-400/20 via-slate-900 to-secondary/20">
+<div class="bg-slate-950/90 rounded-[calc(1rem-4px)] px-12 py-16 text-center relative overflow-hidden">
+<!-- Background aesthetic flare -->
+<div class="absolute -top-24 -left-24 w-64 h-64 bg-cyan-400/10 rounded-full blur-3xl"></div>
+<div class="absolute -bottom-24 -right-24 w-64 h-64 bg-secondary/10 rounded-full blur-3xl"></div>
+<span class="material-symbols-outlined text-5xl text-cyan-400 mb-6" data-weight="fill">lock_open</span>
+<h2 class="font-headline-xl text-primary mb-4">Unlock Deep Research</h2>
+<p class="text-body-md text-on-surface-variant max-w-2xl mx-auto mb-10">
+                        Access raw neural node data, predictive competitor timelines, and full historical synthesis archives. 
+                        Power your decisions with the highest level of synthetic intelligence available.
+                    </p>
+<div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+<button class="px-10 py-4 bg-gradient-to-r from-cyan-400 to-secondary text-slate-950 font-black rounded-lg text-sm uppercase tracking-widest hover:brightness-110 hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] transition-all">
+                            Upgrade to Tier-01
+                        </button>
+<button class="px-10 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-lg text-sm uppercase tracking-widest hover:bg-white/10 transition-all">
+                            View Documentation
+                        </button>
+</div>
+<div class="mt-12 flex justify-center gap-12 border-t border-white/5 pt-8">
+<div class="text-center">
+<p class="font-data-mono text-cyan-400 text-xl">1.2 PB</p>
+<p class="font-label-sm text-slate-500 uppercase">RAW DATA</p>
+</div>
+<div class="text-center">
+<p class="font-data-mono text-secondary text-xl">0.02ms</p>
+<p class="font-label-sm text-slate-500 uppercase">LATENCY</p>
+</div>
+<div class="text-center">
+<p class="font-data-mono text-primary text-xl">∞ Nodes</p>
+<p class="font-label-sm text-slate-500 uppercase">SYNTHESIS</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+</body></html>

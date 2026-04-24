@@ -1,0 +1,62 @@
+extend schema
+  @link(url: "https://specs.apollo.dev/federation/v2.5", import: ["@key", "@shareable"])
+
+type Query {
+  company(id: ID!): Company
+  companyByName(name: String!): Company
+  companies: [Company!]!
+}
+
+type Company @key(fields: "id") {
+  id: ID!
+  name: String!
+  tagline: String!
+  summary: String!
+  generatedAt: String!
+  officialClaims: [String!]!
+  publicSentiment: Sentiment!
+  employeeTrend: EmployeeTrend!
+  keyPeople: [Person!]!
+  competitors: [Competitor!]!
+  contradictions: [Contradiction!]!
+  sources: [Source!]!
+}
+
+type Sentiment @shareable {
+  score: Float!
+  trend: String!
+  sampleMentions: [String!]!
+}
+
+type EmployeeTrend @shareable {
+  headcount: Int!
+  growth30d: Float!
+  signal: String!
+}
+
+type Person @shareable {
+  name: String!
+  role: String!
+  linkedinUrl: String
+}
+
+type Competitor @shareable {
+  name: String!
+  overlap: String!
+  strength: Float!
+}
+
+type Contradiction @shareable {
+  claim: String!
+  officialSource: String!
+  counterEvidence: String!
+  counterSource: String!
+}
+
+type Source @shareable {
+  url: String!
+  title: String!
+  kind: String!
+  fetchedAt: String!
+  excerpt: String
+}
