@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import type { CompanyInsight } from "@/lib/types";
 
@@ -19,8 +20,10 @@ interface ReportState {
 
 export default function ReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const router = useRouter();
   const [data, setData] = useState<ReportState | null>(null);
   const [paying, setPaying] = useState(false);
+  const [reRunning, setReRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -30,6 +33,23 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
   }, [id]);
 
   useEffect(() => { void load(); }, [load]);
+
+  async function reRun() {
+    if (!data) return;
+    setReRunning(true);
+    try {
+      const res = await fetch("/api/research", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ company: data.company }),
+      });
+      if (!res.ok) throw new Error("re-run failed");
+      router.push(`/research/${id}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "re-run failed");
+      setReRunning(false);
+    }
+  }
 
   async function unlock() {
     setPaying(true);
@@ -89,8 +109,25 @@ export default function ReportPage({ params }: { params: Promise<{ id: string }>
         <p className="text-[var(--on-surface-variant)] max-w-3xl leading-relaxed">
           {insight.summary}
         </p>
-        <div className="font-mono text-[10px] tracking-[0.2em] text-[var(--on-surface-variant)]/70 uppercase">
-          generated {insight.generatedAt} · {insight.sources.length} sources
+        <div className="flex items-center justify-between flex-wrap gap-3 pt-2">
+          <div className="font-mono text-[10px] tracking-[0.2em] text-[var(--on-surface-variant)]/70 uppercase">
+            generated {insight.generatedAt} · {insight.sources.length} sources
+          </div>
+          <button
+            onClick={reRun}
+            disabled={reRunning}
+            className="nn-btn-ghost flex items-center gap-2"
+            title="Re-research this company — updates this same page"
+          >
+            {reRunning ? (
+              <>
+                <span className="w-2 h-2 rounded-full bg-[var(--primary)] nn-pulse" />
+                re-running…
+              </>
+            ) : (
+              <>↻ re-research</>
+            )}
+          </button>
         </div>
       </header>
 
