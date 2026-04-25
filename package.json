@@ -16,6 +16,7 @@
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.0",
     "@tryghost/admin-api": "^1.14.7",
+    "firebase": "^12.12.1",
     "graphql": "^16.13.2",
     "graphql-yoga": "^5.21.0",
     "nanoid": "^5.1.9",

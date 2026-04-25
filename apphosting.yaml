@@ -1,0 +1,80 @@
+# Firebase App Hosting config for SuperBrain.
+# Docs: https://firebase.google.com/docs/app-hosting/configure
+#
+# Build / runtime settings for the Next.js server. App Hosting detects
+# Next.js automatically and runs `next build` + `next start` behind Cloud Run.
+
+runConfig:
+  # Small demo; scale up if you start taking real traffic.
+  minInstances: 0
+  maxInstances: 4
+  cpu: 1
+  memoryMiB: 1024
+  concurrency: 80
+  # 3-minute hard timeout — our loop runs ~35s, plus buffer.
+  timeoutSeconds: 300
+
+# Public (NEXT_PUBLIC_*) vars — safe to commit, visible to the client.
+env:
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: AIzaSyDyZ8BYELItaHkZ50-BLSAirz2vVccmO_0
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: superbrain-tokens.firebaseapp.com
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: superbrain-tokens
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: superbrain-tokens.firebasestorage.app
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "513347173414"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: 1:513347173414:web:9c3cc74e97ef3427ae7ae7
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    value: G-1RLXB08VPE
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # Secrets — bind each to a Google Secret Manager secret of the same name.
+  # Create with:  firebase apphosting:secrets:set <NAME>
+  - variable: REDIS_URL
+    secret: REDIS_URL
+  - variable: ghost_admin_api
+    secret: ghost_admin_api
+  - variable: ghost_url
+    secret: ghost_url
+  - variable: SENSO_API_KEY
+    secret: SENSO_API_KEY
+  - variable: TinyFish_API
+    secret: TinyFish_API
+  - variable: CDP_client_api
+    secret: CDP_client_api
+  - variable: CDP_secret
+    secret: CDP_secret
+  - variable: GEMINI_API_KEY
+    secret: GEMINI_API_KEY
+  - variable: AI_MODEL
+    value: gemini-3.1-flash-lite-preview
+    availability:
+      - RUNTIME
+  - variable: APP_PUBLIC_URL
+    secret: APP_PUBLIC_URL
+  - variable: COSMO_API_KEY
+    secret: COSMO_API_KEY

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
+import { FirebaseAnalytics } from "@/components/FirebaseAnalytics";
 import "./globals.css";
 
 const inter = Inter({
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
+        <FirebaseAnalytics />
         <SiteHeader />
         <main className="flex-1 flex flex-col">{children}</main>
         <SiteFooter />
